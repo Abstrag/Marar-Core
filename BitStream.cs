@@ -1,0 +1,93 @@
+﻿namespace MararCore0
+{
+    public class BitStream
+    {
+        public Stream Base;
+        private byte LastByte = 0;
+        private byte LastLength = 0;
+
+        public BitStream(Stream stream)
+        {
+            Base = stream;
+        }
+
+        private void WriteBit(byte bit)
+        {
+            if (bit != 0) LastByte |= (byte)(1 << (7 - LastLength));
+            if (LastLength == 7)
+            {
+                Base.WriteByte(LastByte);
+                LastLength = 0;
+                LastByte = 0;
+            }
+            else LastLength++;
+        }
+
+        public void WriteByte(byte data, byte length)
+        {
+            data <<= 8 - length;
+            for (byte i = 0; i < length; i++)
+            {
+                WriteBit((byte)(data & (byte)(1 << 7 - i)));
+            }
+        }
+        public void Write(byte[] data, byte length)
+        {
+            for (uint i = 0; i < (data.Length - 1); i++)
+                WriteByte(data[i], 8);
+            WriteByte(data[^1], length);
+        }
+        public void FlushWrite()
+        {
+            if(LastLength > 0)
+                Base.WriteByte(LastByte);
+        }
+
+        private byte ReadBit()
+        {
+            byte result = (byte)((1 << 7 - LastLength) & LastByte);
+            if (LastLength == 7)
+            {
+                LastByte = (byte)Base.ReadByte();
+                LastLength = 0;
+            }
+            else LastLength++;
+            return result;
+        }
+
+        public byte ReadByte(byte length)
+        {
+            byte result = 0;
+
+            for (byte i = 0; i < length; i++)
+            {
+                if (ReadBit() != 0) result |= (byte)(1 << (7 - i));
+            }
+
+            return (byte)(result >> (8 - length));
+        }
+        public byte[] Read(byte bitsLength)
+        {
+            byte byteSize = (byte)MathF.Floor(bitsLength / 8);
+            bitsLength %= 8;
+            if (bitsLength == 0)
+            {
+                byteSize--;
+                bitsLength = 8;
+            }
+            byte[] result = new byte[byteSize + 1];
+
+            for (byte i = 0; i < byteSize; i++)
+            {
+                result[i] = ReadByte(8);
+            }
+            result[^1] = ReadByte(bitsLength);
+
+            return result;
+        }
+        public void StartRead()
+        {
+            LastByte = (byte)Base.ReadByte();
+        }
+    }
+}
