@@ -7,15 +7,6 @@
 
     public class RLZ : FileProcessor
     {
-        private DateTime Time;
-        private void Start()
-        {
-            Time = DateTime.Now;
-        }
-        private void End()
-        {
-            Console.WriteLine(Time.Second - DateTime.Now.Second);
-        }
         private List<byte[]> Dictionary = new();
         public RLZ(Stream input, Stream output) : base(input, output) { }
 
@@ -54,7 +45,6 @@
         }
         public override void Encode()
         {
-            Start();
             uint lastIndexes = 0;
             bool isFirst = true;
             byte[] lastOrder = [];
@@ -88,7 +78,6 @@
                 else isFirst = false;
             }
             Output.Write(BitConverter.GetBytes((ushort)(lastIndexes >> 8)));
-            End();
         }
     }
 }

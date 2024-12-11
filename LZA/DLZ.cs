@@ -10,15 +10,6 @@
         private Dictionary<byte[], ushort> Dictionary = new();
         public DLZ(Stream input, Stream output) : base(input, output) { }
 
-        private DateTime Time;
-        private void Start()
-        {
-            Time = DateTime.Now;
-        }
-        private void End()
-        {
-            Console.WriteLine(Time.Second - DateTime.Now.Second);
-        }
         private ushort AddOrder(byte[] data)
         {
             //if (data.Length > 2) Console.WriteLine(data.Length);
@@ -37,7 +28,6 @@
         }
         public override void Encode()
         {
-            Start();
             BitStream stream = new(Output);
             List<byte> order = new();
             List<byte> commonOrder = new();
@@ -80,8 +70,6 @@
                 if (order.Count != 0) stream.Write(BitConverter.GetBytes(currentIndex), 12);
             }
             stream.FlushWrite();
-
-            End();
         }
     }
 }

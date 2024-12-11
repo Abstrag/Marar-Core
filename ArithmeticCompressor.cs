@@ -6,31 +6,6 @@
         private long SourceLength { get; set; } = 0;
 
         public ArithmeticCompressor(Stream input, Stream output) : base(input, output) { }
-        /*private Dictionary<byte, Tuple<double, double>> GetRanges(Tuple<double, double> originRange)
-        {
-            Dictionary<byte, Tuple<double, double>> rangeDictionary = new();
-
-            double lastBorder = originRange.Item1;
-
-            foreach (byte symbol in IntDictionary.Keys)
-            {
-                rangeDictionary.Add(symbol, 
-                    new(lastBorder, lastBorder + IntDictionary[symbol] * originRange.GetLength() / IntDictionary.GetLength()));
-                lastBorder = rangeDictionary[symbol].Item2;
-            }
-
-            return rangeDictionary;
-        }*/
-
-        private DateTime Time;
-        private void Start()
-        {
-            Time = DateTime.Now;
-        }
-        private void End()
-        {
-            Console.WriteLine(Time.Second - DateTime.Now.Second);
-        }
 
         private Dictionary<byte, Tuple<double, double>> GetRanges(Tuple<double, double> originRange)
         {
@@ -71,7 +46,6 @@
         }
         public override void Encode()
         {
-            Start();
             ComputeFrequence();
 
             Input.Position = 0;
@@ -100,8 +74,6 @@
             }
 
             Output.Write(BitConverter.GetBytes(lastRange.Item1));
-
-            End();
         }
 
         private void ReadDictionary()

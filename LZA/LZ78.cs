@@ -2,15 +2,6 @@
 {
     public class LZ78 : FileProcessor
     {
-        private DateTime Time;
-        private void Start()
-        {
-            Time = DateTime.Now;
-        }
-        private void End()
-        {
-            Console.WriteLine(Time.Second - DateTime.Now.Second);
-        }
         private const byte CodeLength = 9;
         private Dictionary<byte[], ushort> OrderDictionary = new();
         private uint DictionaryLength = (uint)MathF.Pow(2, CodeLength);
@@ -32,7 +23,6 @@
         }
         public override void Encode()
         {
-            Start();
             BitStream bitStream = new(Output);
             List<byte> order = new();
             ushort tempCode = 0;
@@ -53,7 +43,6 @@
             }
 
             bitStream.FlushWrite();
-            End();
         }
     }
 }
