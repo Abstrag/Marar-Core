@@ -37,6 +37,11 @@
                 WriteByte(data[i], 8);
             WriteByte(data[^1], length);
         }
+        public void Write(ulong data, byte bitsLength)
+        {
+            for (sbyte i = (sbyte)(bitsLength - 1); i > -1; i--)
+                WriteBit((byte)((data >> i) & 1));
+        }
         public void FlushWrite()
         {
             if(LastLength > 0)
