@@ -2,41 +2,43 @@
 {
     public class LZ78 : FileProcessor
     {
-        private const byte CodeLength = 9;
-        private Dictionary<byte[], ushort> OrderDictionary = new();
-        private uint DictionaryLength = (uint)MathF.Pow(2, CodeLength);
-        private ulong OverflowCounter = 0;
+        private byte CodeLength;
+        private List<byte[]> OrderDictionary = new();
+        private uint DictionaryLength;
 
-        public LZ78(Stream input, Stream output) : base(input, output) { }
+        public LZ78(Stream input, Stream output, byte codeLength = 12) : base(input, output) 
+        { 
+            CodeLength = codeLength;
+            DictionaryLength = (uint)MathF.Pow(2, CodeLength);
+        }
 
         private ushort AddOrder(byte[] data)
         {
             if (OrderDictionary.Count >= DictionaryLength)
             {
                 OrderDictionary.Clear();
-                //Console.WriteLine($"{OverflowCounter}) {Input.Position}:{Output.Position} {Output.Position / (double)Input.Position}");
-                OverflowCounter++;
             }
                 
-            OrderDictionary.Add(data, (ushort)(OrderDictionary.Count + 1));
+            OrderDictionary.Add(data);
             return (ushort)OrderDictionary.Count;
         }
         public override void Encode()
         {
             BitStream bitStream = new(Output);
             List<byte> order = new();
+            Predicate<byte[]> predicate = new(arr => Enumerable.SequenceEqual(arr, order.ToArray()));
             ushort tempCode = 0;
 
             while (Input.Position < Input.Length)
             {
                 order.Add((byte)Input.ReadByte());
-                if (OrderDictionary.ContainsKey(order.ToArray()))
+                int longIndex = OrderDictionary.FindIndex(predicate);
+                if (longIndex >= 0)
                 {
-                    tempCode = OrderDictionary[order.ToArray()];
+                    tempCode = (ushort)longIndex;
                     continue;
                 }
-                bitStream.Write(BitConverter.GetBytes(tempCode), CodeLength - 8);
-                bitStream.WriteByte(order[^1], 8);
+                bitStream.Write((ulong)(tempCode << CodeLength | order[^1]), (byte)(CodeLength + 8));
                 AddOrder(order.ToArray());
                 order.Clear();
                 tempCode = 0;
