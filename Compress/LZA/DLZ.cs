@@ -1,4 +1,4 @@
-﻿namespace MararCore0.LZA
+﻿namespace MararCore0.Compress.LZA
 {
     /*internal struct Order
     {
@@ -24,7 +24,7 @@
         private int GetIndex(byte[] data)
         {
             if (data.Length == 1) return data[0];
-            Predicate<byte[]> predicate = new(arr => Enumerable.SequenceEqual(arr, data));
+            Predicate<byte[]> predicate = new(arr => arr.SequenceEqual(data));
             return Dictionary.FindIndex(predicate);
         }
         public override void Encode()
@@ -93,7 +93,7 @@
             }
             if (commonOrder.Count != 0)
                 stream.Write(prevIndex, 12);
-            if (order.Count != 0) 
+            if (order.Count != 0)
                 stream.Write(currentIndex, 12);
             stream.FlushWrite();
         }

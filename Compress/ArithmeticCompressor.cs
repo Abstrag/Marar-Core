@@ -1,4 +1,4 @@
-﻿namespace MararCore0
+﻿namespace MararCore0.Compress
 {
     public class ArithmeticCompressor : FileProcessor
     {
@@ -106,10 +106,10 @@
                 Tuple<double, double> lastRange = new(0, 1);
                 double address = BitConverter.ToDouble(Input.ReadBytes(8));
 
-                while(true)
+                while (true)
                 {
                     bool isTrue = lastRange.IsLastTrue();
-                    if (isTrue) 
+                    if (isTrue)
                         break;
                     else
                     {

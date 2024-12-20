@@ -1,4 +1,4 @@
-﻿namespace MararCore0.LZA
+﻿namespace MararCore0.Compress.LZA
 {
     /*internal struct Order
     {
@@ -12,16 +12,16 @@
 
         private bool IsEquals(byte[] data1, byte[] data2)
         {
-            if(data1.Length != data2.Length) return false;
+            if (data1.Length != data2.Length) return false;
             for (uint i = 0; i < data1.Length; i++)
             {
-                if(data1[i] != data2[i]) return false;
+                if (data1[i] != data2[i]) return false;
             }
             return true;
         }
         private int Consist(byte[] data)
         {
-            if(data.Length == 1) return data[0];
+            if (data.Length == 1) return data[0];
             for (int i = 0; i < Dictionary.Count; i++)
             {
                 if (IsEquals(data, Dictionary.ElementAt(i))) return (ushort)i;

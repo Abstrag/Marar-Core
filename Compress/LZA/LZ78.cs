@@ -1,4 +1,4 @@
-﻿namespace MararCore0.LZA
+﻿namespace MararCore0.Compress.LZA
 {
     public class LZ78 : FileProcessor
     {
@@ -6,8 +6,8 @@
         private List<byte[]> OrderDictionary = new();
         private uint DictionaryLength;
 
-        public LZ78(Stream input, Stream output, byte codeLength = 12) : base(input, output) 
-        { 
+        public LZ78(Stream input, Stream output, byte codeLength = 12) : base(input, output)
+        {
             CodeLength = codeLength;
             DictionaryLength = (uint)MathF.Pow(2, CodeLength);
         }
@@ -18,7 +18,7 @@
             {
                 OrderDictionary.Clear();
             }
-                
+
             OrderDictionary.Add(data);
             return (ushort)OrderDictionary.Count;
         }
@@ -26,7 +26,7 @@
         {
             BitStream bitStream = new(Output);
             List<byte> order = new();
-            Predicate<byte[]> predicate = new(arr => Enumerable.SequenceEqual(arr, order.ToArray()));
+            Predicate<byte[]> predicate = new(arr => arr.SequenceEqual(order.ToArray()));
             ushort tempCode = 0;
 
             while (Input.Position < Input.Length)
