@@ -1,6 +1,6 @@
 ﻿namespace MararCore0
 {
-    internal class LotStream : Stream
+    internal class LotStreamReader : Stream
     {
         private uint StreamCounter = 0;
         public Stream[] Streams { get; private set; }
@@ -16,9 +16,9 @@
                 return result;
             }
         }
-        public override bool CanRead => Streams[0].CanRead;
+        public override bool CanRead => true;
         public override bool CanSeek => Streams[0].CanSeek;
-        public override bool CanWrite => Streams[0].CanWrite;
+        public override bool CanWrite => false;
         public override long Position
         {
             get
@@ -43,7 +43,7 @@
                         Streams[i].Position = position;
                         break;
                     }
-                    if (position == 0)
+                    if (position == 1)
                     {
                         counter = 
                         break;
@@ -52,7 +52,7 @@
             }
         }
 
-        public LotStream(Stream[] streams)
+        public LotStreamReader(Stream[] streams)
         {
             Streams = streams;
         }
@@ -65,7 +65,7 @@
         }
         public override void Write(byte[] buffer, int offset, int count)
         {
-
+            throw new NotImplementedException();
         }
         public override int Read(byte[] buffer, int offset, int count)
         {
