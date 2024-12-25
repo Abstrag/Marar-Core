@@ -1,5 +1,3 @@
-using MararCore.Compress.LZA;
-
 namespace MararCore
 {
     public class Program
@@ -10,9 +8,9 @@ namespace MararCore
 
         public static void Main()
         {
-            FileStream s1 = new(Origin, FileMode.Open);
+            /*FileStream s1 = new(Origin, FileMode.Open);
             FileStream s2 = new(Encoded, FileMode.Open);
-            FileStream s3 = new(Decoded, FileMode.Open);
+            FileStream s3 = new(Decoded, FileMode.Open);*/
 
 
 
