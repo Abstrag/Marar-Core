@@ -1,4 +1,4 @@
-﻿namespace MararCore0.Compress.LZA
+﻿namespace MararCore.Compress.LZA
 {
     public class LZ78 : FileProcessor
     {
@@ -14,16 +14,16 @@
             OrderDictionary = new byte[MaxDictionaryLength][];
         }
 
-        private ushort AddOrder(byte[] data)
+        private void AddOrder(byte[] data)
         {
             if (DictionaryLength >= MaxDictionaryLength)
             {
                 Console.WriteLine($"{Output.Position / (double)Input.Position} in {Input.Position}");
                 DictionaryLength = 0;
             }
-                
-            OrderDictionary.Add(data);
-            return (ushort)OrderDictionary.Count;
+
+            OrderDictionary[DictionaryLength] = data;
+            DictionaryLength++;
         }
         public override void Encode()
         {
@@ -41,7 +41,7 @@
                     tempCode = (ushort)longIndex;
                     continue;
                 }
-                bitStream.Write((ulong)(tempCode << CodeLength | order[^1]), (byte)(CodeLength + 8));
+                bitStream.Write((ulong)(tempCode << 8 | order[^1]), CodeLength);
                 AddOrder(order.ToArray());
                 order.Clear();
                 tempCode = 0;

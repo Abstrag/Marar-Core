@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace MararCore0
+namespace MararCore
 {
     public class Logging
     {

@@ -1,4 +1,4 @@
-﻿namespace MararCore0.Compress.LZA
+﻿namespace MararCore.Compress.LZA
 {
     /*internal struct Order
     {

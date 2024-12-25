@@ -1,6 +1,6 @@
-﻿namespace MararCore0
+﻿namespace MararCore
 {
-    internal class LotStreamReader : Stream
+    public class LotStreamReader : Stream
     {
         private uint StreamCounter = 0;
         public Stream[] Streams { get; private set; }
@@ -45,7 +45,7 @@
                     }
                     if (position == 1)
                     {
-                        counter = 
+                        //counter = 
                         break;
                     }
                 }

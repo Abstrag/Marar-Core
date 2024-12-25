@@ -1,4 +1,4 @@
-﻿namespace MararCore0
+﻿namespace MararCore
 {
     public static class Entropy
     {
