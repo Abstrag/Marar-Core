@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35527.113 d17.12
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MararCore0", "MararCore0.csproj", "{E5018A65-3C0D-4743-A6AE-9F6561C63EE6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MararCore", "MararCore.csproj", "{E5018A65-3C0D-4743-A6AE-9F6561C63EE6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
