@@ -59,10 +59,6 @@
                 stream.Flush();
             }
         }
-        public void Write(byte[] buffer)
-        {
-            Write(buffer, 0, buffer.Length);
-        }
         public override void Write(byte[] buffer, int offset, int count)
         {
             int startCount = count;

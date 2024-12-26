@@ -7,7 +7,7 @@
         private byte[][] OrderDictionary;
         private uint MaxDictionaryLength;
 
-        public LZ78(Stream input, Stream output, byte codeLength = 12) : base(input, output)
+        public LZ78(Stream input, Stream output, byte codeLength = 16) : base(input, output)
         {
             CodeLength = codeLength;
             MaxDictionaryLength = (uint)MathF.Pow(2, CodeLength);
@@ -18,7 +18,9 @@
         {
             if (DictionaryLength >= MaxDictionaryLength)
             {
-                Console.WriteLine($"{Output.Position / (double)Input.Position} in {Input.Position}");
+#if DEBUG
+                Console.WriteLine($"{Output.Position / (double)Input.Position} in {Input.Position} {MathF.Floor(Input.Position * 100 / Input.Length)}%");
+#endif
                 DictionaryLength = 0;
             }
 
@@ -29,7 +31,7 @@
         {
             BitStream bitStream = new(Output);
             List<byte> order = new();
-            Predicate<byte[]> predicate = new(arr => Enumerable.SequenceEqual(arr, order.ToArray()));
+            Predicate<byte[]> predicate = new(arr => Enumerable.SequenceEqual(arr ?? [], order.ToArray()));
             ushort tempCode = 0;
 
             while (Input.Position < Input.Length)
@@ -41,7 +43,7 @@
                     tempCode = (ushort)longIndex;
                     continue;
                 }
-                bitStream.Write((ulong)(tempCode << 8 | order[^1]), CodeLength);
+                bitStream.Write((ulong)(tempCode << 8 | order[^1]), (byte)(CodeLength + 8));
                 AddOrder(order.ToArray());
                 order.Clear();
                 tempCode = 0;
