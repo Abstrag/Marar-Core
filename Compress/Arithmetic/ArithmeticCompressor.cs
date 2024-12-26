@@ -1,4 +1,4 @@
-﻿namespace MararCore.Compress
+﻿namespace MararCore.Compress.Arithmetic
 {
     public class ArithmeticCompressor : FileProcessor
     {
