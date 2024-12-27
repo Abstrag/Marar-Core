@@ -90,13 +90,14 @@
             
             ReadDictionary();
             InitLengths();
+            bitStream.StartRead();
 
             while (Input.Position < Input.Length)
             {
                 if (range.Item2 - range.Item1 <= 0)
                 {
                     range = new(0, MaxCode); 
-                    code = BitConverter.ToUInt64(bitStream.Read(CodeLength));
+                    code = bitStream.Read(CodeLength);
                     continue;
                 }
                 
@@ -105,6 +106,7 @@
                     if (code < Lengths[i]) continue;
                     Output.WriteByte((byte)i);
                     range = GetRange(range, (byte)i);
+                    break;
                 }
             }
         }

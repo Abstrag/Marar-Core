@@ -74,7 +74,7 @@
         public ulong Read(byte bitsLength)
         {
             ulong result = 0;
-            for (sbyte i = (sbyte)bitsLength; i >= 0; i--)
+            for (sbyte i = 0; i < bitsLength; i++)
             {
                 if (LastLength >= 8)
                 {
@@ -82,7 +82,8 @@
                     LastLength = 0;
                 }
 
-                result &= (ulong)(LastByte & (1 << (7 - LastLength))) << (i - 7 + LastLength);
+                result |= (ulong)(LastByte & (1 << (7 - LastLength))) << (i - LastLength);
+                LastLength++;
             }
             return result;
         }
