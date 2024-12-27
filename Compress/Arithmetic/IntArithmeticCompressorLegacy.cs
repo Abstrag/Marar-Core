@@ -1,13 +1,13 @@
 ﻿namespace MararCore.Compress.Arithmetic
 {
-    public class IntArithmeticCompressor : FileProcessor
+    public class IntArithmeticCompressorLegacy : FileProcessor
     {
         private readonly byte CodeLength;
         private readonly ulong MaxCode = 1;
-        private readonly ulong[] Lengths = new ulong[256];
         private readonly ulong[] FrequencyDictionary = new ulong[256];
+        private readonly Tuple<ulong, ulong>[] CurrentDictionary = new Tuple<ulong, ulong>[256];
 
-        public IntArithmeticCompressor(Stream input, Stream output, byte codeLength = 32) : base(input, output)
+        public IntArithmeticCompressorLegacy(Stream input, Stream output, byte codeLength = 32) : base(input, output)
         {
             CodeLength = codeLength;
             for (byte i = 0; i < CodeLength; i++)
@@ -29,21 +29,16 @@
                 FrequencyDictionary[Input.ReadByte()]++;
             }
         }
-        private void InitLengths()
-        {
-            ulong lastLength = 0;
-
-            for (ushort i = 0; i < 256; i++)
-            {
-                Lengths[i] = lastLength;
-                lastLength += FrequencyDictionary[i];
-            }
-        }
-        private Tuple<ulong, ulong> GetRange(Tuple<ulong, ulong> baseRange, byte symbol)
+        private void UpdateRangeDictionary(Tuple<ulong, ulong> baseRange)
         {
             double step = (baseRange.Item2 - baseRange.Item1) / (double)Input.Length;
-            ulong low = (ulong)Math.Round(baseRange.Item1 + Lengths[symbol] * step);
-            return new(low, low + (ulong)Math.Round(FrequencyDictionary[symbol] * step));
+            CurrentDictionary[0] = new (0, (ulong)Math.Round(FrequencyDictionary[0] * step));
+            
+            for (ushort i = 1; i < 256; i++)
+            {
+                ulong start = CurrentDictionary[i - 1].Item2;
+                CurrentDictionary[i] = new(start, start + (ulong)Math.Round(FrequencyDictionary[i] * step));
+            }
         }
         public override void Encode()
         {
@@ -51,21 +46,22 @@
             Tuple<ulong, ulong> currentRange = new(0, MaxCode);
             
             InitFrequencyDictionary();
-            InitLengths();
             WriteDictionary();
+            UpdateRangeDictionary(currentRange);
             Input.Position = 0;
             
             while (Input.Position < Input.Length)
             {
                 if (currentRange.Item2 - currentRange.Item1 > 0)
                 {
-                    currentRange = GetRange(currentRange, (byte)Input.ReadByte());
+                    currentRange = CurrentDictionary[(byte)Input.ReadByte()];
                 }
                 else
                 {
                     bitStream.Write(currentRange.Item1, CodeLength);
                     currentRange = new(0, MaxCode);
                 }
+                UpdateRangeDictionary(currentRange);
             }
             
             bitStream.Write(currentRange.Item1, CodeLength);

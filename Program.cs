@@ -1,22 +1,32 @@
+using MararCore.Compress.Arithmetic;
 using MararCore.Compress.LZA;
 
 namespace MararCore
 {
     public class Program
-    {
-        private static string Origin = @"Y:\Users\bar32\Pictures\����2.png";
+    {   
+        #if false
+        private static string Origin = @"Y:\Users\bar32\Pictures\f2.png";
         private static string Encoded = @"Y:\Users\bar32\Pictures\sample.bin";
         private static string Decoded = @"Y:\Users\bar32\Pictures\figna.bin";
+        #else
+        private static string Origin = "/home/admen/Рабочий стол/MararTest/TLauncher.jar";
+        private static string Encoded = "/home/admen/Рабочий стол/MararTest/f2.bin";
+        private static string Decoded = "/home/admen/Рабочий стол/MararTest/f3.bin";
+        #endif
 
         public static void Main()
         {
-            FileStream input = new(Origin, FileMode.Open);
-            FileStream output = new(Encoded, FileMode.Create);
-            FileProcessor processor = new LZ78(input, output);
-            processor.Encode();
-            Console.WriteLine($"{input.Length} -> {output.Length}");
-            input.Close();
-            output.Close();
+            FileStream f1 = new(Origin, FileMode.Open);
+            FileStream f2 = new(Encoded, FileMode.Create);
+
+            ArithmeticCompressor compressorLegacy = new(f1, f2);
+            DateTime start = DateTime.Now;
+            compressorLegacy.Encode();
+            Console.WriteLine((DateTime.Now - start).Seconds);
+            Console.WriteLine(f2.Length / (double)f1.Length);
+            f1.Close();
+            f2.Close();
 
             /*Console.WriteLine(Enumerable.SequenceEqual([97, 98], [97, 98]));
             List<byte[]> dictionary = new();
