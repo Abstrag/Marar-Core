@@ -2,7 +2,7 @@
 {
     public class BitStream
     {
-        public Stream Base;
+        private Stream Base;
         private byte LastByte = 0;
         private byte LastLength = 0;
 
@@ -71,23 +71,19 @@
 
             return (byte)(result >> (8 - length));
         }
-        public byte[] Read(byte bitsLength)
+        public ulong Read(byte bitsLength)
         {
-            byte byteSize = (byte)MathF.Floor(bitsLength / 8);
-            bitsLength %= 8;
-            if (bitsLength == 0)
+            ulong result = 0;
+            for (sbyte i = (sbyte)bitsLength; i >= 0; i--)
             {
-                byteSize--;
-                bitsLength = 8;
-            }
-            byte[] result = new byte[byteSize + 1];
+                if (LastLength >= 8)
+                {
+                    LastByte = (byte)Base.ReadByte();
+                    LastLength = 0;
+                }
 
-            for (byte i = 0; i < byteSize; i++)
-            {
-                result[i] = ReadByte(8);
+                result &= (ulong)(LastByte & (1 << (7 - LastLength))) << (i - 7 + LastLength);
             }
-            result[^1] = ReadByte(bitsLength);
-
             return result;
         }
         public void StartRead()

@@ -15,6 +15,16 @@
                 MaxCode *= 2;
             }
         }
+
+        private void ReadDictionary()
+        {
+            for (short i = 0; i < 256; i++)
+            {
+                byte[] buffer = new byte[8];
+                Input.Read(buffer);
+                FrequencyDictionary[i] = BitConverter.ToUInt64(buffer);
+            }
+        }
         private void WriteDictionary()
         {
             foreach (ulong key in FrequencyDictionary)
@@ -70,6 +80,33 @@
             
             bitStream.Write(currentRange.Item1, CodeLength);
             bitStream.FlushWrite();
+        }
+
+        public void Decode()
+        {
+            BitStream bitStream = new(Input);
+            Tuple<ulong, ulong> range = new(0, 0);
+            ulong code = 0;
+            
+            ReadDictionary();
+            InitLengths();
+
+            while (Input.Position < Input.Length)
+            {
+                if (range.Item2 - range.Item1 <= 0)
+                {
+                    range = new(0, MaxCode); 
+                    code = BitConverter.ToUInt64(bitStream.Read(CodeLength));
+                    continue;
+                }
+                
+                for (ushort i = 0; i < 256; i++)
+                {
+                    if (code < Lengths[i]) continue;
+                    Output.WriteByte((byte)i);
+                    range = GetRange(range, (byte)i);
+                }
+            }
         }
     }
 }
