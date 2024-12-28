@@ -5,6 +5,17 @@
         private Stream Base;
         private byte LastByte = 0;
         private byte LastLength = 0;
+        private byte LastCount
+        {
+            get
+            {
+                return (byte)(7 - LastLength);
+            }
+            set
+            {
+                LastLength = (byte)(7 - value);
+            }
+        }
 
         public BitStream(Stream stream)
         {
@@ -39,12 +50,21 @@
         }
         public void Write(ulong data, byte bitsLength)
         {
-            for (sbyte i = (sbyte)(bitsLength - 1); i > -1; i--)
-                WriteBit((byte)((data >> i) & 1));
+            for (sbyte i = 0; i < bitsLength; i++)
+            {
+                LastByte |= (byte)(((data & (ulong)(1 << i)) >> i) << LastLength);
+                if (LastLength == 7)
+                {
+                    Base.WriteByte(LastByte);
+                    LastByte = 0;
+                    LastLength = 0;
+                }
+                else LastLength++;
+            }
         }
         public void FlushWrite()
         {
-            if(LastLength > 0)
+            if (LastLength > 0)
                 Base.WriteByte(LastByte);
         }
 
