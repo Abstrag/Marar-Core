@@ -5,7 +5,7 @@ namespace MararCore
     public class Program
     {   
         #if true
-        private static string Origin = @"Y:\Users\bar32\Pictures\луна2.png";
+        private static string Origin = @"Y:\Users\bar32\Pictures\sample.txt";
         private static string Encoded = @"Y:\Users\bar32\Pictures\sample.bin";
         private static string Decoded = @"Y:\Users\bar32\Pictures\figna.bin";
         #else

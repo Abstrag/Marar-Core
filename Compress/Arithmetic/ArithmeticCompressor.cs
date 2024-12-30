@@ -106,17 +106,11 @@
                 Tuple<double, double> lastRange = new(0, 1);
                 double address = BitConverter.ToDouble(Input.ReadBytes(8));
 
-                while (true)
+                while (!lastRange.IsLastTrue())
                 {
-                    bool isTrue = lastRange.IsLastTrue();
-                    if (isTrue)
-                        break;
-                    else
-                    {
-                        Dictionary<byte, Tuple<double, double>> rangeDictionary = GetRanges(lastRange);
-                        lastRange = GetRange(rangeDictionary, address);
-                        Output.WriteByte(rangeDictionary.GetByteKey(lastRange));
-                    }
+                    Dictionary<byte, Tuple<double, double>> rangeDictionary = GetRanges(lastRange);
+                    lastRange = GetRange(rangeDictionary, address);
+                    Output.WriteByte(rangeDictionary.GetByteKey(lastRange));
                 }
 
                 //Logging.WriteLine($"End block. OPosition: {Output.Position}");

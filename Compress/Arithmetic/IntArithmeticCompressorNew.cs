@@ -1,6 +1,6 @@
 ﻿namespace MararCore.Compress.Arithmetic
 {
-    public class IntArithmeticCompressor : FileProcessor
+    public class IntArithmeticCompressorNew : FileProcessor
     {
         private readonly byte CodeLength;
         private readonly ulong MaxCode = 1;
@@ -8,7 +8,7 @@
         private readonly ulong[] FrequencyDictionary = new ulong[256];
         private ulong SourceLength = 0;
 
-        public IntArithmeticCompressor(Stream input, Stream output, byte codeLength = 8) : base(input, output)
+        public IntArithmeticCompressorNew(Stream input, Stream output, byte codeLength = 32) : base(input, output)
         {
             CodeLength = codeLength;
             for (byte i = 0; i < CodeLength; i++)
@@ -68,7 +68,7 @@
 
             for (short i = 0; i < 256; i++)
             {
-                if (Lengths[i] < code && code <= Lengths[i + 1])
+                if (Lengths[i] <= code && code < Lengths[i + 1])
                     symbol = i;
             }
             Output.Flush();
@@ -144,14 +144,18 @@
                 range = new(0, MaxCode);
                 code = bitStream.Read(CodeLength);
 
-                while (range.Item2 - range.Item1 > 0)
+                while (true)
                 {
-                    DebugTrash(range, code);
-                    symbol = GetSymbol(range, code);
-                    Output.WriteByte(symbol);
-                    Output.FlushAsync();
-                    range = GetRange(range, symbol);
-                    Logging.WriteLine($"{range.Item1}:{range.Item2} {symbol}");
+                    if (range.Item2 - range.Item1 > 0)
+                    {
+                        DebugTrash(range, code);
+                        symbol = GetSymbol(range, code);
+                        Output.WriteByte(symbol);
+                        Output.FlushAsync();
+                        range = GetRange(range, symbol);
+                        Logging.WriteLine($"{range.Item1}:{range.Item2} {symbol}");
+                    }
+                    else break;
                 }
             }
         }
