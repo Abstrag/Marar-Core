@@ -1,15 +1,14 @@
 ﻿namespace MararCore.Compress.Arithmetic
 {
-    public class IntArithmeticCompressorNew : FileProcessor
+    public class IntArithmeticCompressor2 : FileProcessor
     {
         private readonly byte CodeLength;
         private readonly ulong MaxCode = 1;
-        private readonly double[] Lengths = new double[257];
+        private readonly ulong[] Lengths = new ulong[257];
         private readonly ulong[] FrequencyDictionary = new ulong[256];
-        private readonly double[] ProbabilityDictionary = new double[256];
         private ulong SourceLength = 0;
 
-        public IntArithmeticCompressorNew(Stream input, Stream output, byte codeLength = 32) : base(input, output)
+        public IntArithmeticCompressor2(Stream input, Stream output, byte codeLength = 32) : base(input, output)
         {
             CodeLength = codeLength;
             for (byte i = 0; i < CodeLength; i++)
@@ -35,13 +34,6 @@
                 Output.Write(BitConverter.GetBytes(key));
             }
         }
-        private void InitProbability()
-        {
-            for (short i = 0; i < 256; i++)
-            {
-                ProbabilityDictionary[i] = (double)FrequencyDictionary[i] / SourceLength;
-            }
-        }
         private void InitFrequencyDictionary()
         {
             while (Input.Position < Input.Length)
@@ -51,32 +43,39 @@
         }
         private void InitLengths()
         {
-            double lastLength = 0;
+            ulong lastLength = 0;
 
             for (ushort i = 0; i < 256; i++)
             {
                 Lengths[i] = lastLength;
-                lastLength += ProbabilityDictionary[i];
+                lastLength += FrequencyDictionary[i];
             }
             Lengths[256] = lastLength;
         }
         private Tuple<ulong, ulong> GetRange(Tuple<ulong, ulong> baseRange, byte symbol)
         {
-            return new(baseRange.Item1 + (ulong)Math.Round(baseRange.Item2 * Lengths[symbol]), 
-                (ulong)Math.Round(baseRange.Item2 * ProbabilityDictionary[symbol]));
+            double step = baseRange.Item2 / (double)SourceLength;
+            return new(baseRange.Item1 + baseRange.Item2 + (ulong)Math.Round(Lengths[symbol] * step), 
+                (ulong)Math.Round(FrequencyDictionary[symbol] * step));
         }
-        private byte GetSymbol(Tuple<ulong, ulong> range, double code)
+        private byte GetSymbol(Tuple<ulong, ulong> baseRange, ulong code)
         {
+            //ulong l = SourceLength * (baseRange.Item1 - code) / (baseRange.Item2 - baseRange.Item1);
+            //code -= baseRange.Item1;
+            //code = (ulong)(code * SourceLength / (double)(baseRange.Item2 - baseRange.Item1));
+            ulong trueCode = (ulong)((code - baseRange.Item1) * (double)SourceLength / baseRange.Item2);
+            short symbol = -1;
+
             for (short i = 0; i < 256; i++)
             {
-                if (Lengths[i] <= code && code < Lengths[i + 1])
-                {
-                    return (byte)i;
-                }
+                if (Lengths[i] <= trueCode && trueCode < Lengths[i + 1])
+                    symbol = i;
             }
+            Output.Flush();
+            if (symbol > -1)
+                return (byte)symbol;
             throw new Exception("Жопа");
         }
-        
         public override void Encode()
         {
             SourceLength = (ulong)Input.Length;
@@ -86,11 +85,10 @@
             Tuple<ulong, ulong> range = new(0, MaxCode);
 
             InitFrequencyDictionary();
-            InitProbability();
             InitLengths();
             WriteDictionary();
             Input.Position = 0;
-            
+
             while (Input.Position < Input.Length)
             {
                 byte symbol = (byte)Input.ReadByte();
@@ -111,33 +109,35 @@
 
             bitStream.FlushWrite();
         }
+
         public void Decode()
         {
+            BitStream bitStream = new(Input);
+            Tuple<ulong, ulong> range = new(0, MaxCode);
+            ulong code;
+            byte symbol;
+
             ReadDictionary();
             for (short i = 0; i < 256; i++)
             {
                 SourceLength += FrequencyDictionary[i];
             }
-            InitProbability();
             InitLengths();
-
-            double code;
-            Tuple<ulong, ulong> range = new(0, MaxCode);
-            BitStream bitStream = new(Input);
             bitStream.StartRead();
 
             while (Input.Position < Input.Length)
             {
-                code = bitStream.Read(CodeLength);
-                
-                while (range.Item2 > 0)
-                {
-                    byte symbol = GetSymbol(range, code);
-                    range = GetRange(range, symbol);
-                    Output.WriteByte(symbol);
-                }
-
                 range = new(0, MaxCode);
+                code = bitStream.Read(CodeLength);
+
+                while (range.Item2 - range.Item1 > 1)
+                {
+                    symbol = GetSymbol(range, code);
+                    Output.WriteByte(symbol);
+                    Output.FlushAsync();
+                    range = GetRange(range, symbol);
+                    Logging.WriteLine($"{range.Item1}:{range.Item2} {symbol}");
+                }
             }
         }
     }

@@ -8,7 +8,7 @@
         private readonly ulong[] FrequencyDictionary = new ulong[256];
         private ulong SourceLength = 0;
 
-        public IntArithmeticCompressor(Stream input, Stream output, byte codeLength = 8) : base(input, output)
+        public IntArithmeticCompressor(Stream input, Stream output, byte codeLength = 32) : base(input, output)
         {
             CodeLength = codeLength;
             for (byte i = 0; i < CodeLength; i++)
@@ -63,12 +63,12 @@
             //ulong l = SourceLength * (baseRange.Item1 - code) / (baseRange.Item2 - baseRange.Item1);
             //code -= baseRange.Item1;
             //code = (ulong)(code * SourceLength / (double)(baseRange.Item2 - baseRange.Item1));
-            code = (ulong)Math.Round((code - baseRange.Item1) * (double)SourceLength / (baseRange.Item2 - baseRange.Item1));
+            ulong trueCode = (ulong)((code - baseRange.Item1) * (double)SourceLength / (baseRange.Item2 - baseRange.Item1));
             short symbol = -1;
 
             for (short i = 0; i < 256; i++)
             {
-                if (Lengths[i] <= code && code < Lengths[i + 1])
+                if (Lengths[i] <= trueCode && trueCode < Lengths[i + 1])
                     symbol = i;
             }
             Output.Flush();
@@ -117,8 +117,8 @@
         {
             BitStream bitStream = new(Input);
             Tuple<ulong, ulong> range = new(0, MaxCode);
-            ulong code = 0;
-            byte symbol = 0;
+            ulong code;
+            byte symbol;
             
             ReadDictionary();
             for (short i = 0; i < 256; i++)
@@ -135,14 +135,7 @@
 
                 while (range.Item2 - range.Item1 > 1)
                 {
-                    try
-                    {
-                        symbol = GetSymbol(range, code);
-                    }
-                    catch
-                    {
-                        break;
-                    }
+                    symbol = GetSymbol(range, code);
                     Output.WriteByte(symbol);
                     Output.FlushAsync();
                     range = GetRange(range, symbol);
