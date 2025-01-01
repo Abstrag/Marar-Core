@@ -63,12 +63,12 @@
             //ulong l = SourceLength * (baseRange.Item1 - code) / (baseRange.Item2 - baseRange.Item1);
             //code -= baseRange.Item1;
             //code = (ulong)(code * SourceLength / (double)(baseRange.Item2 - baseRange.Item1));
-            code = (ulong)((code - baseRange.Item1) * (double)SourceLength / (baseRange.Item2 - baseRange.Item1));
+            code = (ulong)Math.Round((code - baseRange.Item1) * (double)SourceLength / (baseRange.Item2 - baseRange.Item1));
             short symbol = -1;
 
             for (short i = 0; i < 256; i++)
             {
-                if (Lengths[i] < code && code <= Lengths[i + 1])
+                if (Lengths[i] <= code && code < Lengths[i + 1])
                     symbol = i;
             }
             Output.Flush();
@@ -93,10 +93,10 @@
                 byte symbol = (byte)Input.ReadByte();
                 Logging.WriteLine($"{currentRange.Item1}:{currentRange.Item2} {symbol}");
 
-                if (currentRange.Item2 - currentRange.Item1 == 0)
+                if (currentRange.Item2 - currentRange.Item1 <= 1)
                 {
-                    Logging.WriteLine($"W:{lastRange.Item2}");
-                    bitStream.Write(lastRange.Item2, CodeLength);
+                    Logging.WriteLine($"W:{lastRange.Item1}");
+                    bitStream.Write(lastRange.Item1, CodeLength);
                     lastRange = new(0, MaxCode);
                 }
                 else
@@ -111,17 +111,6 @@
             }
 
             bitStream.FlushWrite();
-        }
-
-        private void DebugTrash(Tuple<ulong, ulong> baseRange, ulong code)
-        {
-            ulong l = (ulong)((code - baseRange.Item1) * (double)SourceLength / (baseRange.Item2 - baseRange.Item1));
-            byte s = 0;
-            for (short i = 0; i < 256; i++)
-            {
-                if (Lengths[i] <= l && l < Lengths[i + 1]) s = (byte)i;
-            }
-            Console.WriteLine(s);
         }
 
         public void Decode()
@@ -144,10 +133,16 @@
                 range = new(0, MaxCode);
                 code = bitStream.Read(CodeLength);
 
-                while (range.Item2 - range.Item1 > 0)
+                while (range.Item2 - range.Item1 > 1)
                 {
-                    DebugTrash(range, code);
-                    symbol = GetSymbol(range, code);
+                    try
+                    {
+                        symbol = GetSymbol(range, code);
+                    }
+                    catch
+                    {
+                        break;
+                    }
                     Output.WriteByte(symbol);
                     Output.FlushAsync();
                     range = GetRange(range, symbol);
