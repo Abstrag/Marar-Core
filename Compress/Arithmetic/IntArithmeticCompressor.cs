@@ -63,7 +63,7 @@
             //ulong l = SourceLength * (baseRange.Item1 - code) / (baseRange.Item2 - baseRange.Item1);
             //code -= baseRange.Item1;
             //code = (ulong)(code * SourceLength / (double)(baseRange.Item2 - baseRange.Item1));
-            ulong trueCode = (ulong)((code - baseRange.Item1) * (double)SourceLength / (baseRange.Item2 - baseRange.Item1));
+            double trueCode = (code - baseRange.Item1) * (double)SourceLength / (baseRange.Item2 - baseRange.Item1);
             short symbol = -1;
 
             for (short i = 0; i < 256; i++)
