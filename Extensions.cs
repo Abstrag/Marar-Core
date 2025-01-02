@@ -58,7 +58,7 @@
         public static byte[] ReadBytes(this Stream stream, long bufferLength)
         {
             byte[] buffer = new byte[bufferLength];
-            stream.Read(buffer);
+            stream.ReadExactly(buffer);
             return buffer;
         }
     }
