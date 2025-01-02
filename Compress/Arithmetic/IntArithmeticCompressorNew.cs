@@ -4,9 +4,9 @@
     {
         private readonly byte CodeLength;
         private readonly ulong MaxCode = 1;
-        private readonly double[] Lengths = new double[257];
         private readonly ulong[] FrequencyDictionary = new ulong[256];
         private readonly double[] ProbabilityDictionary = new double[256];
+        private readonly double[] Lengths = new double[257];
         private ulong SourceLength = 0;
 
         public IntArithmeticCompressorNew(Stream input, Stream output, byte codeLength = 32) : base(input, output)
@@ -56,7 +56,7 @@
             for (ushort i = 0; i < 256; i++)
             {
                 Lengths[i] = lastLength;
-                lastLength += ProbabilityDictionary[i];
+                lastLength += ProbabilityDictionary[i] * MaxCode;
             }
             Lengths[256] = lastLength;
         }
@@ -65,7 +65,15 @@
             return new(baseRange.Item1 + (ulong)Math.Round(baseRange.Item2 * Lengths[symbol]), 
                 (ulong)Math.Round(baseRange.Item2 * ProbabilityDictionary[symbol]));
         }
-        private byte GetSymbol(Tuple<ulong, ulong> range, double code)
+        private double GetLength(double length, byte symbol)
+        {
+            return length * ProbabilityDictionary[symbol];
+        }
+        private double ImproveCode(double code, double low, byte symbol)
+        {
+            return (code - low) * ProbabilityDictionary[symbol];
+        }
+        private byte GetSymbol(double code)
         {
             for (short i = 0; i < 256; i++)
             {
@@ -121,8 +129,8 @@
             InitProbability();
             InitLengths();
 
-            double code;
-            Tuple<ulong, ulong> range = new(0, MaxCode);
+            ulong code;
+            ulong length = MaxCode;
             BitStream bitStream = new(Input);
             bitStream.StartRead();
 
@@ -130,14 +138,15 @@
             {
                 code = bitStream.Read(CodeLength);
                 
-                while (range.Item2 > 0)
+                while (length > 0)
                 {
-                    byte symbol = GetSymbol(range, code);
-                    range = GetRange(range, symbol);
+                    byte symbol = GetSymbol(code);
+                    code = (ulong)Math.Round(ImproveCode(code, Lengths[symbol], symbol));
+                    length = (ulong)Math.Round(GetLength(length, symbol));
                     Output.WriteByte(symbol);
                 }
 
-                range = new(0, MaxCode);
+                length = MaxCode;
             }
         }
     }

@@ -16,7 +16,7 @@ namespace MararCore
 
         public static void Main()
         {
-#if true
+#if false
             FileStream f1 = new(Encoded, FileMode.Open);
             FileStream f2 = new(Decoded, FileMode.Create);
 
