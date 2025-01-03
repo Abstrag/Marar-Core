@@ -6,13 +6,9 @@
         private readonly ulong MaxCode = 1;
         private readonly ulong MaxLength = 1;
         private readonly ulong[] FrequencyDictionary = new ulong[256];
-        private readonly ulong[] FrequencyLows = new ulong[257];
-        private readonly double[] ProbabilityDictionary = new double[256];
-        private readonly double[] ProbabilityLows = new double[257];
-        private readonly double[] RatioDictionary = new double[256];
         private ulong SourceLength = 0;
 
-        public IntArithmeticCompressor3(Stream input, Stream output, byte codeLength = 32) : base(input, output)
+        public IntArithmeticCompressor3(Stream input, Stream output, byte codeLength = 8) : base(input, output)
         {
             CodeLength = codeLength;
             for (byte i = 0; i < CodeLength; i++)
@@ -46,55 +42,27 @@
                 FrequencyDictionary[Input.ReadByte()]++;
             }
             Input.Position = 0;
-
-            ulong lastLow = 0;
-
-            for (ushort i = 0; i < 256; i++)
-            {
-                FrequencyLows[i] = lastLow;
-                lastLow += FrequencyDictionary[i];
-            }
-            FrequencyLows[256] = lastLow;
         }
-        private void InitProbability()
+        private Tuple<ulong, ulong>[] GetDictionary(Tuple<ulong, ulong> range)
+        {
+            Tuple<ulong, ulong>[] result = new Tuple<ulong, ulong>[256];
+            double step = (double)range.Item2 / SourceLength;
+            ulong low = range.Item1;
+
+            for (short i = 0; i < 256; i++)
+            {
+                ulong length = (ulong)Math.Round(step * FrequencyDictionary[i]);
+                result[i] = new(low, length);
+                low += length;
+            }
+
+            return result;
+        }
+        private byte GetSymbol(Tuple<ulong, ulong>[] dicitonary, ulong code)
         {
             for (short i = 0; i < 256; i++)
             {
-                ProbabilityDictionary[i] = FrequencyDictionary[i] / (double)SourceLength;
-            }
-
-            double lastLow = 0;
-            for (ushort i = 0; i < 256; i++)
-            {
-                ProbabilityLows[i] = lastLow;
-                lastLow += ProbabilityDictionary[i];
-            }
-            ProbabilityLows[256] = lastLow;
-        }
-        private void InitRatio()
-        {
-            for (short i = 0; i < 256; i++)
-            {
-                ProbabilityDictionary[i] = MaxLength / FrequencyDictionary[i];
-            }
-        }
-        private ulong GetCode(byte symbol, ulong code, ulong length)
-        {
-            return code + (ulong)Math.Round(length * ProbabilityLows[symbol]);
-        }
-        private ulong ImproveCode(byte symbol, ulong code, ulong low)
-        {
-            return (ulong)Math.Round(RatioDictionary[symbol] * (code - low));
-        }
-        private ulong GetLength(ulong symbol, ulong length)
-        {
-            return (ulong)Math.Round(length * ProbabilityDictionary[symbol]);
-        }
-        private byte GetSymbol(byte symbol, ulong code)
-        {
-            for (short i = 0; i < 256; i++)
-            {
-                if (FrequencyLows[i] <= code && code < FrequencyLows[i + 1])
+                if (dicitonary[i].Item1 <= code && code < dicitonary[i].Item1 + dicitonary[i].Item2)
                 {
                     return (byte)i;
                 }
@@ -105,31 +73,34 @@
         public override void Encode()
         {
             SourceLength = (ulong)Input.Length;
-            ulong code = 0;
-            ulong length = MaxLength;
-            byte symbol;
             BitStream bitStream = new(Output);
+            ulong lastLow = 0;
+            Tuple<ulong, ulong> range = new(0, MaxLength);
+            Tuple<ulong, ulong>[] dictionary = GetDictionary(range);
 
             InitFrequency();
-            InitProbability();
             WriteDictionary();
 
             while (Input.Position < Input.Length)
             {
-                symbol = (byte)Input.ReadByte();
-                length = GetLength(symbol, length);
+                Logging.WriteLine($"{range.Item1}:{range.Item2 + range.Item1} -> {range.Item2}");
+                byte symbol = (byte)Input.ReadByte();
 
-                if (length <= 0)
+                if (range.Item2 <= 0)
                 {
-                    bitStream.Write(code, CodeLength);
-                    code = 0;
-                    length = MaxLength;
+                    Logging.WriteLine($"Written: {lastLow}");
+                    bitStream.Write(lastLow, CodeLength);
+                    range = new(0, MaxLength);
                 }
-                    
-                code = GetCode(symbol, code, length);
-                length = GetLength(symbol, length);
+                else lastLow = range.Item1;
+
+                dictionary = GetDictionary(range);
+                range = dictionary[symbol];
             }
-            bitStream.Write(code, CodeLength);
+            if (lastLow > 0)
+            {
+                bitStream.Write(lastLow, CodeLength);
+            }
             bitStream.FlushWrite();
         }
 
@@ -140,15 +111,25 @@
             {
                 SourceLength += FrequencyDictionary[i];
             }
-            InitProbability();
-            InitRatio();
-            BitStream bitStream = new(Output);
+            BitStream bitStream = new(Input);
+            Tuple<ulong, ulong> range = new(0, MaxLength);
+            Tuple<ulong, ulong>[] dictionary = GetDictionary(range);
             bitStream.StartRead();
 
             while (Input.Position < Input.Length)
             {
-                ulong code = BitConverter.ToUInt64(Input.ReadBytes(8));
+                ulong code = bitStream.Read(CodeLength);
 
+                while (range.Item2 > 0)
+                {
+                    byte symbol = GetSymbol(dictionary, code);
+                    Output.WriteByte(symbol);
+                    Output.Flush();
+                    dictionary = GetDictionary(range);
+                    range = dictionary[symbol];
+                }
+
+                range = new(0, MaxLength);
             }
         }
     }
