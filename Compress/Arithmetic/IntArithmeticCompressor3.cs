@@ -1,6 +1,6 @@
 ﻿namespace MararCore.Compress.Arithmetic
 {
-    public class IntArithmeticCompressor2 : FileProcessor
+    public class IntArithmeticCompressor3 : FileProcessor
     {
         private readonly byte CodeLength;
         private readonly ulong MaxCode = 1;
@@ -12,7 +12,7 @@
         private readonly double[] RatioDictionary = new double[256];
         private ulong SourceLength = 0;
 
-        public IntArithmeticCompressor2(Stream input, Stream output, byte codeLength = 32) : base(input, output)
+        public IntArithmeticCompressor3(Stream input, Stream output, byte codeLength = 32) : base(input, output)
         {
             CodeLength = codeLength;
             for (byte i = 0; i < CodeLength; i++)
