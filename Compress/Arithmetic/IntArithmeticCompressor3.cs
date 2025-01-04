@@ -46,14 +46,19 @@
         private Tuple<ulong, ulong>[] GetDictionary(Tuple<ulong, ulong> range)
         {
             Tuple<ulong, ulong>[] result = new Tuple<ulong, ulong>[256];
+            Tuple<double, double>[] floatDictionary = new Tuple<double, double>[256];
             double step = (double)range.Item2 / SourceLength;
-            ulong low = range.Item1;
+            double low = range.Item1;
 
             for (short i = 0; i < 256; i++)
             {
-                ulong length = (ulong)Math.Round(step * FrequencyDictionary[i]);
-                result[i] = new(low, length);
+                double length = step * FrequencyDictionary[i];
+                floatDictionary[i] = new(low, length);
                 low += length;
+            }
+            for (short i = 0; i < 256; i++)
+            {
+                result[i] = new((ulong)Math.Round(floatDictionary[i].Item1), (ulong)Math.Round(floatDictionary[i].Item1));
             }
 
             return result;
@@ -122,11 +127,11 @@
 
                 while (range.Item2 > 0)
                 {
+                    dictionary = GetDictionary(range);
                     byte symbol = GetSymbol(dictionary, code);
+                    range = dictionary[symbol];
                     Output.WriteByte(symbol);
                     Output.Flush();
-                    dictionary = GetDictionary(range);
-                    range = dictionary[symbol];
                 }
 
                 range = new(0, MaxLength);
