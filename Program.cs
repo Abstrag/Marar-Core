@@ -5,7 +5,7 @@ namespace MararCore
     public class Program
     {
         #if true
-        private static string Origin = @"Y:\Users\bar32\Pictures\sample.txt";
+        private static string Origin = @"Y:\Users\bar32\Pictures\маруся.jpeg";
         private static string Encoded = @"Y:\Users\bar32\Pictures\sample.bin";
         private static string Decoded = @"Y:\Users\bar32\Pictures\figna.bin";
         #else
@@ -16,7 +16,7 @@ namespace MararCore
 
         public static void Main()
         {
-#if true
+#if false
             FileStream f1 = new(Encoded, FileMode.Open);
             FileStream f2 = new(Decoded, FileMode.Create);
 

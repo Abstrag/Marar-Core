@@ -8,7 +8,7 @@
         private readonly ulong[] FrequencyDictionary = new ulong[256];
         private ulong SourceLength = 0;
 
-        public IntArithmeticCompressor3(Stream input, Stream output, byte codeLength = 8) : base(input, output)
+        public IntArithmeticCompressor3(Stream input, Stream output, byte codeLength = 32) : base(input, output)
         {
             CodeLength = codeLength;
             for (byte i = 0; i < CodeLength; i++)
@@ -58,7 +58,7 @@
             }
             for (short i = 0; i < 256; i++)
             {
-                result[i] = new((ulong)Math.Round(floatDictionary[i].Item1), (ulong)Math.Round(floatDictionary[i].Item1));
+                result[i] = new((ulong)Math.Round(floatDictionary[i].Item1), (ulong)Math.Round(floatDictionary[i].Item2));
             }
 
             return result;
@@ -77,33 +77,39 @@
 
         public override void Encode()
         {
-            SourceLength = (ulong)Input.Length;
-            BitStream bitStream = new(Output);
-            ulong lastLow = 0;
-            Tuple<ulong, ulong> range = new(0, MaxLength);
-            Tuple<ulong, ulong>[] dictionary = GetDictionary(range);
-
             InitFrequency();
             WriteDictionary();
 
+            SourceLength = (ulong)Input.Length;
+            BitStream bitStream = new(Output);
+            ulong lastLow = 0;
+            ushort counter = 0;
+            byte symbol = 0;
+            Tuple<ulong, ulong> range = new(0, MaxLength);
+
             while (Input.Position < Input.Length)
             {
-                Logging.WriteLine($"{range.Item1}:{range.Item2 + range.Item1} -> {range.Item2}");
-                byte symbol = (byte)Input.ReadByte();
-
-                if (range.Item2 <= 0)
+                if (range.Item2 <= 1 || counter > 256)
                 {
-                    Logging.WriteLine($"Written: {lastLow}");
+                    Logging.WriteLine($"Written: {lastLow}; Counter: {counter - 1}");
+                    bitStream.Write((ulong)(counter - 1), 8);
                     bitStream.Write(lastLow, CodeLength);
-                    range = new(0, MaxLength);
+                    range = GetDictionary(new(0, MaxLength))[symbol];
+                    counter = 1;
                 }
-                else lastLow = range.Item1;
-
-                dictionary = GetDictionary(range);
-                range = dictionary[symbol];
+                else
+                {
+                    Logging.WriteLine($"{range.Item1}:{range.Item2 + range.Item1} -> {range.Item2}");
+                    symbol = (byte)Input.ReadByte();
+                    lastLow = range.Item1;
+                    range = GetDictionary(range)[symbol];
+                    counter++;
+                }
             }
             if (lastLow > 0)
             {
+                Logging.WriteLine($"Written: {lastLow}; Counter: {counter}");
+                bitStream.Write(counter, 8);
                 bitStream.Write(lastLow, CodeLength);
             }
             bitStream.FlushWrite();
@@ -118,20 +124,22 @@
             }
             BitStream bitStream = new(Input);
             Tuple<ulong, ulong> range = new(0, MaxLength);
-            Tuple<ulong, ulong>[] dictionary = GetDictionary(range);
+            Tuple<ulong, ulong>[] dictionary;
             bitStream.StartRead();
 
             while (Input.Position < Input.Length)
             {
+                ushort counter = (ushort)bitStream.Read(8);
                 ulong code = bitStream.Read(CodeLength);
 
-                while (range.Item2 > 0)
+                while (range.Item2 > 0 && counter > 0)
                 {
                     dictionary = GetDictionary(range);
                     byte symbol = GetSymbol(dictionary, code);
                     range = dictionary[symbol];
                     Output.WriteByte(symbol);
                     Output.Flush();
+                    counter--;
                 }
 
                 range = new(0, MaxLength);
