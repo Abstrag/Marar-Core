@@ -3,8 +3,9 @@ namespace MararCore.Compress.Haffman
 {
     public class HaffmanCompressor(Stream input, Stream output) : FileProcessor(input, output)
     {
-        private readonly byte[] SortedSymbols = new byte[256];
+        private readonly ulong[] SymbolDictionary = new byte[256];
         private readonly ulong[] FrequencyDictionary = new ulong[256];
+
         private void InitFrequency()
         {
             while (Input.Position < Input.Length)
@@ -13,10 +14,17 @@ namespace MararCore.Compress.Haffman
             }
             Input.Position = 0;
         }
-        private void InitSorted()
+        private void InitDicitonary()
         {
-            List<ulong> localFrequencies = new(FrequencyDictionary);
+            Dictionary<byte, ulong> frequency = new(256);
+            for (short i = 0; i < 256; i++)
+            {
+                frequency[(byte)i] = FrequencyDictionary[i];
+            }
+            while (frequency.Count > 0)
+            {
 
+            }
         }
         public override void Encode()
         {

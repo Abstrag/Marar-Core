@@ -1,4 +1,4 @@
-using MararCore.Compress.Arithmetic;
+using MararCore.Compress.Haffman;
 
 namespace MararCore
 {
@@ -16,7 +16,7 @@ namespace MararCore
 
         public static void Main()
         {
-#if true
+/*#if true
             FileStream f1 = new(Encoded, FileMode.Open);
             FileStream f2 = new(Decoded, FileMode.Create);
 
@@ -38,7 +38,7 @@ namespace MararCore
             Console.WriteLine(f2.Length / (double)f1.Length);
             f1.Close();
             f2.Close();
-#endif
+#endif*/
         }
     }
 }
