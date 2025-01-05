@@ -12,7 +12,7 @@
         private readonly double[] RatioDictionary = new double[256];
         private ulong SourceLength = 0;
 
-        public IntArithmeticCompressor2(Stream input, Stream output, byte codeLength = 32) : base(input, output)
+        public IntArithmeticCompressor2(Stream input, Stream output, byte codeLength = 8) : base(input, output)
         {
             CodeLength = codeLength;
             for (byte i = 0; i < CodeLength; i++)
@@ -45,8 +45,10 @@
             {
                 FrequencyDictionary[Input.ReadByte()]++;
             }
-            Input.Position = 0;
-
+            Input.Position = 0;           
+        }
+        private void InitFrequencyLows()
+        {
             ulong lastLow = 0;
 
             for (ushort i = 0; i < 256; i++)
@@ -56,11 +58,19 @@
             }
             FrequencyLows[256] = lastLow;
         }
+        private void ImproveFrequency()
+        {
+            double ratio = (double)MaxLength / SourceLength;
+            for (short i = 0; i < 256; i++)
+            {
+                FrequencyDictionary[i] = (ulong)Math.Round(FrequencyDictionary[i] * ratio);
+            }
+        }
         private void InitProbability()
         {
             for (short i = 0; i < 256; i++)
             {
-                ProbabilityDictionary[i] = FrequencyDictionary[i] / (double)SourceLength;
+                ProbabilityDictionary[i] = FrequencyDictionary[i] / (double)MaxLength;
             }
 
             double lastLow = 0;
@@ -78,19 +88,19 @@
                 ProbabilityDictionary[i] = MaxLength / FrequencyDictionary[i];
             }
         }
-        private ulong GetCode(byte symbol, ulong code, ulong length)
+        private double GetCode(byte symbol, double code, double length)
         {
-            return code + (ulong)Math.Round(length * ProbabilityLows[symbol]);
+            return code + length * ProbabilityLows[symbol];
         }
-        private ulong ImproveCode(byte symbol, ulong code, ulong low)
+        private ulong ImproveCode(byte symbol, ulong code)
         {
-            return (ulong)Math.Round(RatioDictionary[symbol] * (code - low));
+            return (ulong)Math.Round(RatioDictionary[symbol] * (code - FrequencyLows[symbol]));
         }
-        private ulong GetLength(ulong symbol, ulong length)
+        private double GetLength(byte symbol, double length)
         {
-            return (ulong)Math.Round(length * ProbabilityDictionary[symbol]);
+            return length * ProbabilityDictionary[symbol];
         }
-        private byte GetSymbol(byte symbol, ulong code)
+        private byte GetSymbol(double code)
         {
             for (short i = 0; i < 256; i++)
             {
@@ -105,31 +115,38 @@
         public override void Encode()
         {
             SourceLength = (ulong)Input.Length;
-            ulong code = 0;
-            ulong length = MaxLength;
+            double lastCode = 0;
+            double code = 0;
+            double length = MaxLength;
             byte symbol;
-            BitStream bitStream = new(Output);
+            short counter = -1;
 
             InitFrequency();
-            InitProbability();
             WriteDictionary();
+            ImproveFrequency();
+            InitFrequencyLows();
+            InitProbability();
+
+            BitStream bitStream = new(Output);
 
             while (Input.Position < Input.Length)
             {
                 symbol = (byte)Input.ReadByte();
-                length = GetLength(symbol, length);
 
-                if (length <= 0)
+                if (length <= 0 || counter >= 256)
                 {
-                    bitStream.Write(code, CodeLength);
+                    bitStream.Write((ulong)counter, 8);
+                    bitStream.Write((ulong)Math.Round(lastCode), CodeLength);
                     code = 0;
                     length = MaxLength;
+                    counter = -1;
                 }
-                    
+
                 code = GetCode(symbol, code, length);
                 length = GetLength(symbol, length);
+                counter++;
             }
-            bitStream.Write(code, CodeLength);
+            bitStream.Write((ulong)Math.Round(code), CodeLength);
             bitStream.FlushWrite();
         }
 
@@ -140,6 +157,8 @@
             {
                 SourceLength += FrequencyDictionary[i];
             }
+            ImproveFrequency();
+            InitFrequencyLows();
             InitProbability();
             InitRatio();
             BitStream bitStream = new(Output);
@@ -147,8 +166,18 @@
 
             while (Input.Position < Input.Length)
             {
-                ulong code = BitConverter.ToUInt64(Input.ReadBytes(8));
+                ushort counter = (ushort)(bitStream.Read(8) + 1);
+                ulong code = bitStream.Read(CodeLength);
+                byte symbol = GetSymbol(code);
+                double length = GetLength(symbol, MaxLength);
 
+                while (length > 0 && counter > 0)
+                {
+                    code = ImproveCode(symbol, code);
+                    symbol = GetSymbol(code);
+                    length = GetLength(symbol, length);
+                    counter--;
+                }
             }
         }
     }
