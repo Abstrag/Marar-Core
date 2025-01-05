@@ -16,11 +16,11 @@ namespace MararCore
 
         public static void Main()
         {
-#if false
+#if true
             FileStream f1 = new(Encoded, FileMode.Open);
             FileStream f2 = new(Decoded, FileMode.Create);
 
-            IntArithmeticCompressor3 compressor = new(f1, f2);
+            IntArithmeticCompressor2 compressor = new(f1, f2);
             DateTime start = DateTime.Now;
             compressor.Decode();
             Console.WriteLine((DateTime.Now - start).Seconds);
