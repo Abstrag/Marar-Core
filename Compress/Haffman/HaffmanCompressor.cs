@@ -45,15 +45,19 @@
         private static List<BinaryNode> SortNodes(List<BinaryNode> nodeBuffer)
         {
             BinaryNode tempNode;
-            for (short i = 1; i < nodeBuffer.Count; i++)
+            for (short i = 0; i < nodeBuffer.Count; i++)
             {
-                if (nodeBuffer[i - 1].Item.Frequency > nodeBuffer[i].Item.Frequency)
+                for (short j = 0; j < nodeBuffer.Count; j++)
                 {
-                    tempNode = nodeBuffer[i];
-                    nodeBuffer[i] = nodeBuffer[i - 1];
-                    nodeBuffer[i - 1] = tempNode;
+                    if (nodeBuffer[i].Item.Frequency < nodeBuffer[j].Item.Frequency)
+                    {
+                        tempNode = nodeBuffer[j];
+                        nodeBuffer[j] = nodeBuffer[i];
+                        nodeBuffer[i] = tempNode;
+                    }
                 }
             }
+
             return nodeBuffer;
         }
         private static BinaryCode[] GetCodes(BinaryNode root)
@@ -93,6 +97,13 @@
             setCode(root, []);
             return codes;
         }
+        private static void Debug(List<BinaryNode> list)
+        {
+            for (short i = 1; i < list.Count; i++)
+            {
+                if (list[i - 1].Item.Frequency > list[i].Item.Frequency) Console.WriteLine("Жопа");
+            }
+        }
         
         public override void Encode()
         {
@@ -106,8 +117,9 @@
             while (nodeBuffer.Count > 1) 
             {
                 nodeBuffer = SortNodes(nodeBuffer);
-                left = nodeBuffer[^-2];
-                right = nodeBuffer[^-1];
+                Debug(nodeBuffer);
+                left = nodeBuffer[0];
+                right = nodeBuffer[1];
                 nodeBuffer.Add(new(left, right, new(left.Item.Frequency + right.Item.Frequency)));
                 nodeBuffer.RemoveAt(0);
                 nodeBuffer.RemoveAt(1);
