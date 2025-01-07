@@ -2,27 +2,15 @@
 {
     internal struct NodeItem
     {
-        public byte Symbol
-        {
-            get
-            {
-                return Symbols[0];
-            }
-            set
-            {
-                Symbols[0] = value;
-            }
-        }
-        public byte[] Symbols;
+        public byte Symbol;
         public ulong Frequency;
-        public NodeItem(byte[] symbols, ulong frequency)
-        {
-            Symbols = symbols;
-            Frequency = frequency;
-        }
         public NodeItem(byte symbol, ulong frequency)
         {
-            Symbols = [symbol];
+            Symbol = symbol;
+            Frequency = frequency;
+        }
+        public NodeItem(ulong frequency)
+        {
             Frequency = frequency;
         }
     }
@@ -31,6 +19,7 @@
         public NodeItem Item;
         public BinaryNode? Left;
         public BinaryNode? Right;
+        public bool IsLeaf => Left == null && Right == null;
 
         public BinaryNode() { }
         public BinaryNode(BinaryNode left, BinaryNode right, NodeItem item)
