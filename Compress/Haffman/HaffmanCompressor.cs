@@ -11,6 +11,22 @@
         private readonly BitStream BitWriter = new(output);
         private readonly ulong[] FrequencyDictionary = new ulong[256];
 
+        private void ReadDictionary()
+        {
+            for (short i = 0; i < 256; i++)
+            {
+                byte[] buffer = new byte[8];
+                Input.ReadExactly(buffer);
+                FrequencyDictionary[i] = BitConverter.ToUInt64(buffer);
+            }
+        }
+        private void WriteDictionary()
+        {
+            foreach (ulong key in FrequencyDictionary)
+            {
+                Output.Write(BitConverter.GetBytes(key));
+            }
+        }
         private void InitFrequency()
         {
             while (Input.Position < Input.Length)
@@ -21,12 +37,9 @@
         }
         private List<BinaryNode> GetNodes()
         {
-            List<BinaryNode> nodes = new(256);
+            List<BinaryNode> nodes = new();
             for (short i = 0; i < 256; i++)
-            {
-                nodes[i].Item.Frequency = FrequencyDictionary[i];
-                nodes[i].Item.Symbol = (byte)i;
-            }
+                nodes.Add(new(new((byte)i, FrequencyDictionary[i])));
             return nodes;
         }
         private static List<BinaryNode> SortNodes(List<BinaryNode> nodeBuffer)
@@ -84,6 +97,7 @@
         public override void Encode()
         {
             InitFrequency();
+            WriteDictionary();
 
             List<BinaryNode> nodeBuffer = GetNodes();
             BinaryNode left;
@@ -92,8 +106,8 @@
             while (nodeBuffer.Count > 1) 
             {
                 nodeBuffer = SortNodes(nodeBuffer);
-                left = nodeBuffer[0];
-                right = nodeBuffer[1];
+                left = nodeBuffer[^-2];
+                right = nodeBuffer[^-1];
                 nodeBuffer.Add(new(left, right, new(left.Item.Frequency + right.Item.Frequency)));
                 nodeBuffer.RemoveAt(0);
                 nodeBuffer.RemoveAt(1);

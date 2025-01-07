@@ -28,5 +28,9 @@
             Right = right;
             Item = item;
         }
+        public BinaryNode(NodeItem item)
+        {
+            Item = item;
+        }
     }
 }
