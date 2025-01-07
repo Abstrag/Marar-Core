@@ -61,7 +61,15 @@
             ImproveFrequency();
             InitFrequencyLows();
 
-
+            uint tempCode = 0;
+            long symbolEncode(byte symbol, uint code)
+            {
+                if ((FrequencyDictionary[symbol] <= 0 && FrequencyDictionary[symbol] > ConstM) || code < ConstL)
+                {
+                    return -1;
+                }
+                return 0;
+            }
         }
     }
 }
