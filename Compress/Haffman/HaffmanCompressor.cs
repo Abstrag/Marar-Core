@@ -42,6 +42,25 @@
                 nodes.Add(new(new((byte)i, FrequencyDictionary[i])));
             return nodes;
         }
+        private BinaryNode GetRoot()
+        {
+            List<BinaryNode> nodeBuffer = GetNodes();
+            BinaryNode left;
+            BinaryNode right;
+
+            while (nodeBuffer.Count > 1)
+            {
+                nodeBuffer = SortNodes(nodeBuffer);
+                //Debug(nodeBuffer);
+                left = nodeBuffer[0];
+                right = nodeBuffer[1];
+                nodeBuffer.RemoveAt(0);
+                nodeBuffer.RemoveAt(0);
+                nodeBuffer.Add(new(left, right, new(left.Item.Frequency + right.Item.Frequency)));
+            }
+
+            return nodeBuffer[0];
+        }
         private static List<BinaryNode> SortNodes(List<BinaryNode> nodeBuffer)
         {
             BinaryNode tempNode;
@@ -83,26 +102,31 @@
                 }
                 if (node.Left != null)
                 {
-                    List<bool> local = address.ToList();
-                    local.Add(false);
-                    setCode(node, local);
+                    address.Add(false);
+                    setCode(node.Left, address);
+                    address.RemoveAt(address.Count - 1);
                 }
                 if (node.Right != null)
                 {
-                    List<bool> local = address.ToList();
-                    local.Add(true);
-                    setCode(node, local);
+                    address.Add(true);
+                    setCode(node.Right, address);
+                    address.RemoveAt(address.Count - 1);
                 }
             }
             setCode(root, []);
             return codes;
         }
+        
         private static void Debug(List<BinaryNode> list)
         {
+            ulong length = 0;
+            //Console.SetCursorPosition(0, 0);
             for (short i = 0; i < list.Count; i++)
             {
-                Console.WriteLine($"{list[i].Item.Frequency} {list[i].IsLeaf}");
+                length += list[i].Item.Frequency;
+                Logging.WriteLine($"{list[i].Item.Frequency} {list[i].IsLeaf}");
             }
+            Logging.WriteLine(length.ToString());
         }
 
         public override void Encode()
@@ -110,22 +134,7 @@
             InitFrequency();
             WriteDictionary();
 
-            List<BinaryNode> nodeBuffer = GetNodes();
-            BinaryNode left;
-            BinaryNode right;
-
-            while (nodeBuffer.Count > 1) 
-            {
-                nodeBuffer = SortNodes(nodeBuffer);
-                Debug(nodeBuffer);
-                left = nodeBuffer[0];
-                right = nodeBuffer[1];
-                nodeBuffer.Add(new(left, right, new(left.Item.Frequency + right.Item.Frequency)));
-                nodeBuffer.RemoveAt(0);
-                nodeBuffer.RemoveAt(1);
-            }
-
-            BinaryCode[] codes = GetCodes(nodeBuffer[0]);
+            BinaryCode[] codes = GetCodes(GetRoot());
             
             while (Input.Position < Input.Length)
             {
@@ -133,6 +142,14 @@
                 BitWriter.Write(codes[symbol].Code, codes[symbol].BitsCount);
             }
             BitWriter.FlushWrite();
+        }
+        public void Decode()
+        {
+            ReadDictionary();
+
+            BinaryNode root = GetRoot();
+            BinaryCode[] codes = GetCodes(root);
+
         }
     }
 }
