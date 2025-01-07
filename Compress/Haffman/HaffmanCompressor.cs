@@ -99,12 +99,12 @@
         }
         private static void Debug(List<BinaryNode> list)
         {
-            for (short i = 1; i < list.Count; i++)
+            for (short i = 0; i < list.Count; i++)
             {
-                if (list[i - 1].Item.Frequency > list[i].Item.Frequency) Console.WriteLine("Жопа");
+                Console.WriteLine($"{list[i].Item.Frequency} {list[i].IsLeaf}");
             }
         }
-        
+
         public override void Encode()
         {
             InitFrequency();
