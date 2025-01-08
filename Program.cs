@@ -5,7 +5,7 @@ namespace MararCore
     public class Program
     {
         #if true
-        private static string Origin = @"Y:\Users\bar32\Pictures\Yandex_Music_x64_5.25.1.exe";
+        private static string Origin = @"Y:\Users\bar32\Pictures\lorem ipsum.txt";
         private static string Encoded = @"Y:\Users\bar32\Pictures\sample.bin";
         private static string Decoded = @"Y:\Users\bar32\Pictures\figna.bin";
         #else
@@ -20,14 +20,16 @@ namespace MararCore
             node.Left = new(new((byte)'a', 5));
             node.Right = new();*/
 #if true
-#if false
+#if true
             FileStream f1 = new(Encoded, FileMode.Open);
             FileStream f2 = new(Decoded, FileMode.Create);
 
             HaffmanCompressor compressor = new(f1, f2);
             DateTime start = DateTime.Now;
             compressor.Decode();
-            Console.WriteLine((DateTime.Now - start).Seconds);
+            double time = (DateTime.Now - start).TotalSeconds;
+            Console.WriteLine(time);
+            Console.WriteLine($"{f1.Length / time / 1048576} Мб/с");
             Console.WriteLine(f2.Length / (double)f1.Length);
             f1.Close();
             f2.Close();
@@ -40,7 +42,7 @@ namespace MararCore
             compressor.Encode();
             double time = (DateTime.Now - start).TotalSeconds;
             Console.WriteLine(time);
-            Console.WriteLine(f1.Length / time);
+            Console.WriteLine($"{f1.Length / time / 1048576} Мб/с");
             Console.WriteLine(f2.Length / (double)f1.Length);
             f1.Close();
             f2.Close();

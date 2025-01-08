@@ -8,7 +8,6 @@
 
     public class HaffmanCompressor(Stream input, Stream output) : FileProcessor(input, output)
     {
-        private readonly BitStream BitWriter = new(output);
         private readonly ulong[] FrequencyDictionary = new ulong[256];
 
         private void ReadDictionary()
@@ -128,27 +127,72 @@
             }
             Logging.WriteLine(length.ToString());
         }
+        private static string Convert(BinaryCode code)
+        {
+            string result = "";
+            for (short i = code.BitsCount; i > 0; i--)
+            {
+                ulong a = code.Code & ((ulong)1 << i);
+                if (a == 0) result += '0';
+                else result += '1';
+            }
+            return result;
+        }
 
         public override void Encode()
         {
             InitFrequency();
             WriteDictionary();
 
+            BitStream bitWriter = new(Output);
             BinaryCode[] codes = GetCodes(GetRoot());
             
             while (Input.Position < Input.Length)
             {
                 byte symbol = (byte)Input.ReadByte();
-                BitWriter.Write(codes[symbol].Code, codes[symbol].BitsCount);
+                Logging.Write(Convert(codes[symbol]) + ' ');
+                bitWriter.Write(codes[symbol].Code, codes[symbol].BitsCount);
             }
-            BitWriter.FlushWrite();
+            bitWriter.FlushWrite();
         }
         public void Decode()
         {
             ReadDictionary();
 
+            BinaryNode tempNode;
             BinaryNode root = GetRoot();
-            BinaryCode[] codes = GetCodes(root);
+            BitStream reader = new(Input);
+            reader.StartRead();
+
+            while (Input.Position < Input.Length)
+            {
+                tempNode = root;
+                while (true)
+                {
+                    if (tempNode.IsLeaf)
+                    {
+                        Logging.Write(" ");
+                        Output.WriteByte(tempNode.Item.Symbol);
+                        break;
+                    }
+                    else
+                    {
+                        byte bit = reader.ReadBit();
+                        if (bit == 0) Logging.Write(0.ToString());
+                        else Logging.Write(1.ToString());
+                        tempNode = tempNode.GetNode(bit);
+                    }
+                }
+            }
+            /*BinaryCode[] codes = GetCodes(root);
+            byte maxLength = 0;
+            byte minLength = 255;
+            for (short i = 0; i < 256; i++)
+            {
+                if (codes[i].BitsCount > maxLength) maxLength = codes[i].BitsCount;
+                if ((codes[i].BitsCount + 1) < minLength) minLength = codes[i].BitsCount;
+            }
+            minLength--;*/
 
         }
     }

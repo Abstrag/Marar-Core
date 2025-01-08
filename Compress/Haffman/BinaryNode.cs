@@ -32,5 +32,11 @@
         {
             Item = item;
         }
+
+        public BinaryNode? GetNode(byte side)
+        {
+            if(side > 0) return Right;
+            return Left;
+        }
     }
 }

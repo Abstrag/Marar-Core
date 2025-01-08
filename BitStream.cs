@@ -68,7 +68,7 @@
                 Base.WriteByte(LastByte);
         }
 
-        private byte ReadBit()
+        public byte ReadBit()
         {
             byte result = (byte)((1 << 7 - LastLength) & LastByte);
             if (LastLength == 7)
@@ -107,6 +107,7 @@
             }
             return result;
         }
+
         public void StartRead()
         {
             LastByte = (byte)Base.ReadByte();
