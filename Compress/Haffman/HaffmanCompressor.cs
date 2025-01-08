@@ -177,7 +177,7 @@
                     }
                     else
                     {
-                        byte bit = reader.ReadBit();
+                        byte bit = reader.ReverseReadBit();
                         if (bit == 0) Logging.Write(0.ToString());
                         else Logging.Write(1.ToString());
                         tempNode = tempNode.GetNode(bit);

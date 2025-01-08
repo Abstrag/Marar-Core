@@ -79,6 +79,17 @@
             else LastLength++;
             return result;
         }
+        public byte ReverseReadBit()
+        {
+            byte result = (byte)((1 << LastLength) & LastByte);
+            if (LastLength == 7)
+            {
+                LastByte = (byte)Base.ReadByte();
+                LastLength = 0;
+            }
+            else LastLength++;
+            return result;
+        }
 
         public byte ReadByte(byte length)
         {
