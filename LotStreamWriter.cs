@@ -33,6 +33,10 @@
             }
             set
             {
+                for (long j = 0; j < Streams.Length; j++)
+                {
+                    Streams[j].Position = 0;
+                }
                 for (uint i = 0; i < Streams.Length; i++)
                 {
                     value -= Lengths[i];

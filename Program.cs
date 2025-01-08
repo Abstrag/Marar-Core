@@ -25,9 +25,9 @@ namespace MararCore
             node.Left = new(new((byte)'a', 5));
             node.Right = new();*/
 #if true
-#if false
+#if true
             FileStream f1 = new(Encoded, FileMode.Open);
-            FileStream f2 = new(Decoded, FileMode.Create);
+            LotStreamWriter f2 = new(GetFiles(@"Y:\Users\bar32\Pictures\DecodedDirectory"), [1731, 19333, 1663169]);
 
             HaffmanCompressor compressor = new(f1, f2);
             DateTime start = DateTime.Now;

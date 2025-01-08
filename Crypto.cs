@@ -37,7 +37,6 @@ namespace MararCore
             Input.CopyTo(cryptoStream);
             cryptoStream.FlushFinalBlock();
         }
-
         public void Decode()
         {
             try
