@@ -2,20 +2,20 @@
 
 namespace MararCore
 {
-    public class Crypto
+    public class Crypto : FileProcessor
     {
         public readonly Aes Alghorithm = Aes.Create();
         public byte[] GetIV() => Alghorithm.IV;
         public byte[] GetKey() => Alghorithm.Key;
 
-        public Crypto()
+        public Crypto(Stream input, Stream output) : base(input, output)
         {
             Alghorithm.GenerateIV();
             Alghorithm.GenerateKey();
             CreateCrypto();
         }
 
-        public Crypto(byte[] iv, byte[] key)
+        public Crypto(byte[] iv, byte[] key, Stream input, Stream output) : base(input, output)
         {
             CreateCrypto();
             Alghorithm.IV = iv;
@@ -29,27 +29,23 @@ namespace MararCore
             Alghorithm.BlockSize = 128;
         }
 
-        public ulong EncryptStream(Stream input, Stream output)
+        public override void Encode()
         {
-            ulong positionBefore = (ulong)output.Position;
-
             ICryptoTransform encryptor = Alghorithm.CreateEncryptor();
-            CryptoStream cryptoStream = new(output, encryptor, CryptoStreamMode.Write);
+            CryptoStream cryptoStream = new(Output, encryptor, CryptoStreamMode.Write);
 
-            input.CopyTo(cryptoStream);
+            Input.CopyTo(cryptoStream);
             cryptoStream.FlushFinalBlock();
-
-            return (ulong)output.Position - positionBefore;
         }
 
-        public void DecryptStream(Stream input, Stream output)
+        public void Decode()
         {
             try
             {
                 ICryptoTransform decryptor = Alghorithm.CreateDecryptor();
-                CryptoStream cryptoStream = new(input, decryptor, CryptoStreamMode.Read);
+                CryptoStream cryptoStream = new(Input, decryptor, CryptoStreamMode.Read);
                 cryptoStream.Flush();
-                cryptoStream.CopyTo(output);
+                cryptoStream.CopyTo(Output);
                 cryptoStream.Close();
             }
             catch (Exception e)

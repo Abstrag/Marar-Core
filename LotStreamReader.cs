@@ -29,6 +29,10 @@
             }
             set
             {
+                for (long j = 0; j < Streams.Length; j++)
+                {
+                    Streams[j].Position = 0;
+                }
                 long position = value;
                 long i = 0;
                 for (; i < Streams.LongLength; i++)
