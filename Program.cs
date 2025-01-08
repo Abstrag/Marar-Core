@@ -5,8 +5,8 @@ namespace MararCore
     public class Program
     {
         private static string Origin = @"Y:\Users\bar32\Pictures\canon\IMG_0128.CR2";
-        private static string Encoded = @"Y:\Users\bar32\Pictures\sample.bin";
-        private static string Decoded = @"Y:\Users\bar32\Pictures\figna.bin";
+        private static string Encoded = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\encoded.bin";
+        private static string Decoded = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\decoded.bin";
 
         private static FileStream[] GetFiles(string path)
         {
@@ -27,7 +27,7 @@ namespace MararCore
 #if true
 #if true
             FileStream f1 = new(Encoded, FileMode.Open);
-            LotStreamWriter f2 = new(GetFiles(@"Y:\Users\bar32\Pictures\DecodedDirectory"), [1731, 19333, 1663169]);
+            LotStreamWriter f2 = new(GetFiles(@"Y:\Users\bar32\Desktop\NaCondiciiDebug\DecodedDirectory"), [1731, 19333, 1663169]);
 
             HaffmanCompressor compressor = new(f1, f2);
             DateTime start = DateTime.Now;
@@ -38,17 +38,18 @@ namespace MararCore
             Console.WriteLine(f2.Length / (double)f1.Length);
             f1.Close();
             f2.Close();
+            f2.Flush();
 #else
-            LotStreamReader f1 = new(GetFiles(@"Y:\Users\bar32\Pictures\TestDirectory"));
+            LotStreamReader f1 = new(GetFiles(@"Y:\Users\bar32\Desktop\NaCondiciiDebug\TestDirectory"));
             FileStream f2 = new(Encoded, FileMode.Create);
 
             HaffmanCompressor compressor = new(f1, f2);
             DateTime start = DateTime.Now;
             compressor.Encode();
             double time = (DateTime.Now - start).TotalSeconds;
-            Console.WriteLine(time);
+            Console.WriteLine($"{time} секунд");
             Console.WriteLine($"{f1.Length / time / 1048576} Мб/с");
-            Console.WriteLine(f2.Length / (double)f1.Length);
+            Console.WriteLine($"k = {f2.Length / (double)f1.Length}");
             f1.Close();
             f2.Close();
 #endif

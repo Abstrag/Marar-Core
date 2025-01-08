@@ -116,18 +116,7 @@
             return codes;
         }
         
-        private static void Debug(List<BinaryNode> list)
-        {
-            ulong length = 0;
-            //Console.SetCursorPosition(0, 0);
-            for (short i = 0; i < list.Count; i++)
-            {
-                length += list[i].Item.Frequency;
-                Logging.WriteLine($"{list[i].Item.Frequency} {list[i].IsLeaf}");
-            }
-            Logging.WriteLine(length.ToString());
-        }
-        private static string Convert(BinaryCode code)
+        /*private static string Convert(BinaryCode code)
         {
             string result = "";
             for (short i = code.BitsCount; i > 0; i--)
@@ -137,7 +126,7 @@
                 else result += '1';
             }
             return result;
-        }
+        }*/
 
         public override void Encode()
         {
@@ -150,7 +139,7 @@
             while (Input.Position < Input.Length)
             {
                 byte symbol = (byte)Input.ReadByte();
-                Logging.Write(Convert(codes[symbol]) + ' ');
+                //Logging.Write(Convert(codes[symbol]) + ' ');
                 bitWriter.Write(codes[symbol].Code, codes[symbol].BitsCount);
             }
             bitWriter.FlushWrite();
@@ -171,15 +160,15 @@
                 {
                     if (tempNode.IsLeaf)
                     {
-                        Logging.Write(" ");
+                        //Logging.Write(" ");
                         Output.WriteByte(tempNode.Item.Symbol);
                         break;
                     }
                     else
                     {
                         byte bit = reader.ReverseReadBit();
-                        if (bit == 0) Logging.Write(0.ToString());
-                        else Logging.Write(1.ToString());
+                        //if (bit == 0) Logging.Write(0.ToString());
+                        //else Logging.Write(1.ToString());
                         tempNode = tempNode.GetNode(bit);
                     }
                 }

@@ -4,7 +4,7 @@ namespace MararCore
 {
     public class Logging
     {
-        public static FileStream LogFile = new(@"Y:\Users\bar32\Pictures\trace.txt", FileMode.Create);
+        public static FileStream LogFile = new(@"Y:\Users\bar32\Desktop\NaCondiciiDebug\trace.txt", FileMode.Create);
 
         public static void WriteLine(string message)
         {
