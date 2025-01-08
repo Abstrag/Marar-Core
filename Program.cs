@@ -4,15 +4,20 @@ namespace MararCore
 {
     public class Program
     {
-        #if true
-        private static string Origin = @"Y:\Users\bar32\Pictures\lorem ipsum.txt";
+        private static string Origin = @"Y:\Users\bar32\Pictures\canon\IMG_0128.CR2";
         private static string Encoded = @"Y:\Users\bar32\Pictures\sample.bin";
         private static string Decoded = @"Y:\Users\bar32\Pictures\figna.bin";
-        #else
-        private static string Origin = "/home/admen/Рабочий стол/MararTest/466893-vbig.png";
-        private static string Encoded = "/home/admen/Рабочий стол/MararTest/f2.bin";
-        private static string Decoded = "/home/admen/Рабочий стол/MararTest/f3.bin";
-        #endif
+
+        private static FileStream[] GetFiles(string path)
+        {
+            string[] files = Directory.GetFiles(path);
+            FileStream[] result = new FileStream[files.Length];
+            for (long i = 0; i < files.LongLength; i++)
+            {
+                result[i] = new FileStream(files[i], FileMode.Open);
+            }
+            return result;
+        }
 
         public static void Main()
         {
@@ -20,7 +25,7 @@ namespace MararCore
             node.Left = new(new((byte)'a', 5));
             node.Right = new();*/
 #if true
-#if true
+#if false
             FileStream f1 = new(Encoded, FileMode.Open);
             FileStream f2 = new(Decoded, FileMode.Create);
 
@@ -34,7 +39,7 @@ namespace MararCore
             f1.Close();
             f2.Close();
 #else
-            FileStream f1 = new(Origin, FileMode.Open);
+            LotStreamReader f1 = new(GetFiles(@"Y:\Users\bar32\Pictures\TestDirectory"));
             FileStream f2 = new(Encoded, FileMode.Create);
 
             HaffmanCompressor compressor = new(f1, f2);

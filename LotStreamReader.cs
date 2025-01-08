@@ -2,6 +2,7 @@
 {
     public class LotStreamReader : Stream
     {
+        private Stream CurrentStream => Streams[StreamCounter];
         private long InternalPosition = 0;
         private long StreamCounter = 0;
         public Stream[] Streams { get; private set; }
@@ -37,7 +38,7 @@
                     {
                         StreamCounter = i;
                         Streams[i].Position = position + Streams[i].Length;
-                        InternalPosition = position;
+                        InternalPosition = value;
                         break;
                     }
                 }
@@ -60,30 +61,76 @@
         {
             throw new NotImplementedException();
         }
-        public override int Read(byte[] buffer, int offset, int count)
+        /*public override int Read(byte[] buffer, int offset, int count)
         {
             int result = 0;
             long length = count;
-            for (; StreamCounter < Streams.LongLength && length > 0; StreamCounter++)
+            while (StreamCounter < Streams.LongLength && length > 0)
             {
-                int localLength = (int)Streams[StreamCounter].Length;
+                int localLength = (int)(Streams[StreamCounter].Length - Streams[StreamCounter].Position);
                 length -= Streams[StreamCounter].Length;
                 if (length <= 0)
                 {
-                    Streams[StreamCounter].Read(buffer, offset, localLength);
-                    InternalPosition += localLength;
+                    Streams[StreamCounter].ReadExactly(buffer, offset, count);
+                    InternalPosition += count;
                 }
                 else
                 {
-                    Streams[StreamCounter].Read(buffer, offset, localLength);
+                    Streams[StreamCounter].ReadExactly(buffer, offset, localLength);
                     InternalPosition += localLength;
                     offset += localLength;
                 }
                 result += localLength;
+                StreamCounter++;
             }
             if (result == count) return 0;
             return result;
+        }*/
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            int result = 0;
+            int originalCount = count;
+
+            while (count > 0 && Position < Length)
+            {
+                long streamLength = CurrentStream.Length - CurrentStream.Position;
+                long remains = count - streamLength;
+
+                if (count - streamLength <= 0)
+                {
+                    CurrentStream.ReadExactly(buffer, offset, count);
+                    InternalPosition += count;
+                    if (count - streamLength == 0) StreamCounter++;
+                    return originalCount;
+                }
+                else
+                {
+                    CurrentStream.ReadExactly(buffer, offset, (int)streamLength);
+                    offset += (int)remains;
+                    count -= (int)streamLength;
+                    result += (int)streamLength;
+                    StreamCounter++;
+                }
+            }
+            return result;
         }
+        public override int ReadByte()
+        {
+            if (InternalPosition < Length)
+            {
+                while (true)
+                {
+                    if (CurrentStream.Position < CurrentStream.Length)
+                    {
+                        InternalPosition++;
+                        return CurrentStream.ReadByte();
+                    }
+                    else StreamCounter++;
+                }
+            }
+            else return -1;
+        }
+
         public override long Seek(long offset, SeekOrigin origin)
         {
             throw new NotImplementedException();
