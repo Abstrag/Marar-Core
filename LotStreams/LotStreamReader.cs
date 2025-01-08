@@ -1,4 +1,4 @@
-﻿namespace MararCore
+﻿namespace MararCore.LotStreams
 {
     public class LotStreamReader : Stream
     {

@@ -1,10 +1,11 @@
 using MararCore.Compress.Haffman;
+using MararCore.LotStreams;
 
 namespace MararCore
 {
     public class Program
     {
-        private static string Origin = @"Y:\Users\bar32\Pictures\canon\IMG_0128.CR2";
+        private static string Origin = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\gitter.jpg";
         private static string Encoded = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\encoded.bin";
         private static string Decoded = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\decoded.bin";
 
@@ -24,7 +25,10 @@ namespace MararCore
             /*BinaryNode node = new();
             node.Left = new(new((byte)'a', 5));
             node.Right = new();*/
-#if true
+            FileStream f1 = new(Origin, FileMode.Open);
+            FileStream f2 = new(Encoded, FileMode.Create);
+            Crypto crypto = new()
+#if false
 #if true
             FileStream f1 = new(Encoded, FileMode.Open);
             LotStreamWriter f2 = new(GetFiles(@"Y:\Users\bar32\Desktop\NaCondiciiDebug\DecodedDirectory"), [1731, 19333, 1663169]);
