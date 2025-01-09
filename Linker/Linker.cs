@@ -1,4 +1,6 @@
-﻿using static System.BitConverter;
+﻿using MararCore.LotStreams;
+using System.Text;
+using static System.BitConverter;
 
 namespace MararCore.Linker
 {
@@ -28,21 +30,7 @@ namespace MararCore.Linker
         }
         private byte[] EncodeString(string str)
         {
-            byte[] buffer = 
-        }
-        public void Link(string rootDirectory)
-        {
-            Output.Write(GetBytes(Signature));
-            Output.WriteByte(GrandVersion);
-            Output.WriteByte(Version);
-            Output.WriteByte(Flags);
-            Output.Write(GetBytes(DateTimeConverter.Encode(DateTime.Now)));
-            FSHeader fsHeader = new(rootDirectory, LargeMode);
-            Output.Write(GetBytes(fsHeader.Directories.Count));
-            foreach (DirectoryFrame directory in fsHeader.Directories)
-            {
-                Output.Write();
-                /*
+            /*
                 public static string Coding(byte[] data, string codePage = "utf-8")
                 {
                     if (codePage == "utf-8") return Encoding.UTF8.GetString(data);
@@ -57,8 +45,43 @@ namespace MararCore.Linker
                     if (codePage == "latin1") return Encoding.Latin1.GetBytes(data);
                     return [0];
                 }
-                 */
+                */
+            byte[] buffer = Encoding.UTF8.GetBytes(str);
+            return buffer;
+        }
+        public void Link(string rootDirectory)
+        {
+            bool useTime = UseTime;
+            bool largeMode = LargeMode;
+            Output.Write(GetBytes(Signature));
+            Output.WriteByte(GrandVersion);
+            Output.WriteByte(Version);
+            Output.WriteByte(Flags);
+            Output.Write(GetBytes(DateTimeConverter.Encode(DateTime.Now)));
+
+            FSHeader fsHeader = new(rootDirectory, LargeMode);
+
+            Output.Write(GetBytes(fsHeader.Directories.Count));
+            foreach (DirectoryFrame directory in fsHeader.Directories)
+            {
+                Output.Write(GetBytes(directory.Address));
+                Output.Write(EncodeString(directory.Name));
+                if (useTime) Output.Write(GetBytes(DateTimeConverter.Encode(directory.CreationDate)));
             }
+
+            Output.Write(GetBytes(fsHeader.Files.Count));
+            for (int i = 0; i < fsHeader.Files.Count; i++)
+            {
+                FileFrame file = fsHeader.Files[i];
+                Output.Write(GetBytes(file.Address));
+                Output.Write(EncodeString(file.Name));
+                if (largeMode) Output.Write(GetBytes(file.Length));
+                else Output.Write(GetBytes((uint)file.Length));
+                if (useTime) Output.Write(GetBytes(DateTimeConverter.Encode(file.CreationDate)));
+            }
+
+            LotStreamReader lotReader = new(fsHeader.FileStreams.ToArray());
+
         }
     }
 }

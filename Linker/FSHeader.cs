@@ -6,16 +6,16 @@
         public long Length = length;
     }
 
-    internal class DirectoryFrame(uint address, int creationDate, string name)
+    internal class DirectoryFrame(uint address, DateTime creationDate, string name)
     {
         public uint Address = address;
-        public int CreationDate = creationDate;
+        public DateTime CreationDate = creationDate;
         public string Name = name;
     }
-    internal class FileFrame(uint address, int creationDate, string name, long length)
+    internal class FileFrame(uint address, DateTime creationDate, string name, long length)
     {
         public uint Address = address;
-        public int CreationDate = creationDate;
+        public DateTime CreationDate = creationDate;
         public string Name = name;
         public long Length = length;
     }
@@ -23,6 +23,7 @@
     {
         private readonly string RootDirectory = path;
         private readonly bool LargeMode = largeMode;
+        public List<Stream> FileStreams;
         public List<DirectoryFrame> Directories = new();
         public List<FileFrame> Files = new();
         
@@ -32,14 +33,15 @@
             for (uint i = 0; i < paths.Length; i++)
             {
                 FileInfo file = new(paths[i]);
-                Files.Add(new(number, DateTimeConverter.Encode(file.CreationTime), file.Name, file.Length));
+                Files.Add(new(number, file.CreationTime, file.Name, file.Length));
+                FileStreams.Add(file.OpenRead());
             }
 
             paths = Directory.GetDirectories(path);
             for (uint i = 0; i < paths.Length; i++)
             {
                 DirectoryInfo directory = new(paths[i]);
-                Directories.Add(new(number, DateTimeConverter.Encode(directory.CreationTime), directory.Name));
+                Directories.Add(new(number, directory.CreationTime, directory.Name));
                 AppendAll(directory.FullName, (uint)Directories.Count);
             }
         }
