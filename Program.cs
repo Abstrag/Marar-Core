@@ -23,6 +23,9 @@ namespace MararCore
 
         public static void Main()
         {
+            CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
+            CacheManager.InitManager();
+
             int a = -1;
             a <<= 1;
             Console.WriteLine(a);

@@ -1,4 +1,5 @@
-﻿using MararCore.LotStreams;
+﻿using MararCore.Compress.Haffman;
+using MararCore.LotStreams;
 using System.Text;
 using static System.BitConverter;
 
@@ -80,7 +81,10 @@ namespace MararCore.Linker
                 if (useTime) Output.Write(GetBytes(DateTimeConverter.Encode(file.CreationDate)));
             }
 
+            FileStream cacheFile = new(CacheManager.GetNewFile(), FileMode.Create);
             LotStreamReader lotReader = new(fsHeader.FileStreams.ToArray());
+
+            HaffmanCompressor compressor = new(lotReader, cacheFile);
 
         }
     }
