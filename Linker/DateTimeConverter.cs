@@ -2,7 +2,7 @@
 {
     internal static class DateTimeConverter
     {
-        public static int EncodeDateTime(DateTime dateTime)
+        public static int Encode(DateTime dateTime)
         {
             int result = 0;
             result |= (dateTime.Year - 2000) << 25;
@@ -13,8 +13,9 @@
             result |= dateTime.Second / 2;
             return result;
         }
-        public static DateTime DecodeDateTime(int source)
+        public static DateTime Decode(int source)
         {
+            // доделай 
             return DateTime.Now;
         }
     }
