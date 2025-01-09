@@ -1,5 +1,6 @@
 using MararCore.Compress.Haffman;
 using MararCore.LotStreams;
+using System.Security.Cryptography;
 
 namespace MararCore
 {
@@ -22,12 +23,26 @@ namespace MararCore
 
         public static void Main()
         {
-            /*BinaryNode node = new();
-            node.Left = new(new((byte)'a', 5));
-            node.Right = new();*/
+            int a = -1;
+            a <<= 1;
+            Console.WriteLine(a);
+/*
+#if false
             FileStream f1 = new(Origin, FileMode.Open);
             FileStream f2 = new(Encoded, FileMode.Create);
-            Crypto crypto = new()
+            Crypto crypto = new(MD5.HashData([0]), SHA256.HashData([0]), f1, f2);
+            crypto.Encode();
+            f1.Close();
+            f2.Close();
+#else
+            FileStream f1 = new(Encoded, FileMode.Open);
+            FileStream f2 = new(Decoded, FileMode.Create);
+            Crypto crypto = new(MD5.HashData([0]), SHA256.HashData([0]), f1, f2);
+            crypto.Decode();
+            f1.Close();
+            f2.Close();
+#endif
+
 #if false
 #if true
             FileStream f1 = new(Encoded, FileMode.Open);
@@ -58,6 +73,7 @@ namespace MararCore
             f2.Close();
 #endif
 #endif
+*/
         }
     }
 }
