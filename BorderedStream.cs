@@ -1,0 +1,52 @@
+﻿namespace MararCore
+{
+    internal class BorderedStream : Stream
+    {
+        private readonly long Shift;
+        private readonly Stream MainStream;
+        public override bool CanRead => MainStream.CanRead;
+        public override bool CanSeek => MainStream.CanSeek;
+        public override bool CanWrite => MainStream.CanWrite;
+        public override long Length => MainStream.Length - Shift;
+        public override long Position
+        {
+            get => MainStream.Position - Shift;
+            set => MainStream.Position = value + Shift;
+        }
+
+        public BorderedStream(Stream mainStream, long shift)
+        {
+            Shift = shift;
+            MainStream = mainStream;
+        }
+
+        public override void Flush()
+        {
+            MainStream.Flush();
+        }
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            return MainStream.Read(buffer, offset, count);
+        }
+        public override int ReadByte()
+        {
+            return MainStream.ReadByte();
+        }
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            return MainStream.Seek(offset, origin);
+        }
+        public override void SetLength(long value)
+        {
+            MainStream.SetLength(value);
+        }
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            MainStream.Write(buffer, offset, count);
+        }
+        public override void WriteByte(byte value)
+        {
+            MainStream.WriteByte(value);
+        }
+    }
+}

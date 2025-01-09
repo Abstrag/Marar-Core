@@ -8,8 +8,7 @@
 
         public static void InitManager()
         {
-            int id = DateTime.Now.GetHashCode();
-            CurrentDirectory = Path.Combine(RootDirectory, id.ToString());
+            CurrentDirectory = Path.Combine(RootDirectory, DateTime.Now.GetHashCode().ToString());
             Directory.CreateDirectory(CurrentDirectory);
         }
         public static string GetNewFile()

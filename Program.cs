@@ -1,6 +1,6 @@
-using MararCore.Compress.Haffman;
-using MararCore.LotStreams;
+using MararCore.Linker;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace MararCore
 {
@@ -20,15 +20,26 @@ namespace MararCore
             }
             return result;
         }
+        private static byte[] EncodeString(string str)
+        {
+            List<byte> buffer = new(Encoding.UTF8.GetBytes(str));
+            buffer.Add(0);
+            return buffer.ToArray();
+        }
 
         public static void Main()
         {
             CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
             CacheManager.InitManager();
 
-            int a = -1;
-            a <<= 1;
-            Console.WriteLine(a);
+            FileStream output = new(Encoded, FileMode.Create);
+
+            MainLinker linker = new(output);
+            linker.UseTime = true;
+            linker.LargeMode = false;
+            linker.LinkTo(@"Y:\Users\bar32\Desktop\NaCondiciiDebug\TestDirectory", MD5.HashData([0]), SHA512.HashData([0]));
+
+            CacheManager.Flush();
 /*
 #if false
             FileStream f1 = new(Origin, FileMode.Open);
