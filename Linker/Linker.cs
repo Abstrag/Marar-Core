@@ -41,7 +41,23 @@ namespace MararCore.Linker
             Output.Write(GetBytes(fsHeader.Directories.Count));
             foreach (DirectoryFrame directory in fsHeader.Directories)
             {
-                Output.Write(GetBytes());
+                Output.Write();
+                /*
+                public static string Coding(byte[] data, string codePage = "utf-8")
+                {
+                    if (codePage == "utf-8") return Encoding.UTF8.GetString(data);
+                    if (codePage == "ascii") return Encoding.ASCII.GetString(data);
+                    if (codePage == "latin1") return Encoding.Latin1.GetString(data);
+                    return string.Empty;
+                }
+                public static byte[] Coding(string data, string codePage = "utf-8")
+                {
+                    if (codePage == "utf-8") return Encoding.UTF8.GetBytes(data);
+                    if (codePage == "ascii") return Encoding.ASCII.GetBytes(data);
+                    if (codePage == "latin1") return Encoding.Latin1.GetBytes(data);
+                    return [0];
+                }
+                 */
             }
         }
     }
