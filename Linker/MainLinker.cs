@@ -8,12 +8,13 @@ namespace MararCore.Linker
     internal class MainLinker
     {
         private const uint Signature = 0xAF72A04D;
-        private const byte GrandVersion = 0;
-        private const byte Version = 0;
         private readonly string GlobalCache = CacheManager.GetNewFile();
         private readonly Stream MainStream;
         private readonly Crypto GlobalCrypto;
+        private byte GrandVersion = 0;
+        private byte Version = 0;
         private byte Flags;
+        public DateTime CreationDateTime { get; set; }
         public bool UseTime { set => SetFlag(7, value); get => GetFlag(7); }
         public bool LargeMode { set => SetFlag(6, value); get => GetFlag(6); }
         public bool UseCrypto { set => SetFlag(5, value); get => GetFlag(5); }
@@ -62,7 +63,7 @@ namespace MararCore.Linker
             MainStream.WriteByte(GrandVersion);
             MainStream.WriteByte(Version);
             MainStream.WriteByte(Flags);
-            MainStream.Write(GetBytes(DateTimeConverter.Encode(DateTime.Now)));
+            MainStream.Write(GetBytes(DateTimeConverter.Encode(CreationDateTime)));
         }
         private void WriteFS(FSHeader fsHeader)
         {
@@ -160,14 +161,23 @@ namespace MararCore.Linker
 
             return Encoding.UTF8.GetString(buffer.ToArray());
         }
-        private void ReadPrimaryHeader()
+        private void ReadPrimaryHeader(bool ignoreSignature)
         {
-            uint localSignature = BitConverter.ToUInt32(MainStream.ReadBytes(4));
-            
+            if (!ignoreSignature)
+            {
+                if (BitConverter.ToUInt32(MainStream.ReadBytes(4)) != Signature) 
+                    throw new Exception("Wrong signature");
+            }
+            else MainStream.Position += 4;
+
+            GrandVersion = (byte)MainStream.ReadByte();
+            Version = (byte)MainStream.ReadByte();
+            Flags = (byte)MainStream.ReadByte();
+            //CreationDateTime = 
         }
         public FSHeader ReadFS()
         {
-
+            return null;
         }
     }
 }
