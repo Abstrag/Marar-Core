@@ -1,6 +1,5 @@
 ﻿using MararCore.Compress.Haffman;
 using MararCore.LotStreams;
-using System.Reflection.PortableExecutable;
 using System.Text;
 using static System.BitConverter;
 
@@ -57,17 +56,6 @@ namespace MararCore.Linker
                 */
             return Encoding.UTF8.GetBytes(str + '\0');
         }
-        private string ReadString()
-        {
-            List<byte> buffer = [(byte)MainStream.ReadByte()];
-
-            while (buffer[^-1] > 0 || MainStream.Position < MainStream.Length)
-            {
-                buffer.Add((byte)MainStream.ReadByte());
-            }
-
-            return Encoding.UTF8.GetString(buffer.ToArray());
-        }
         private void WritePrimaryHeader()
         {
             MainStream.Write(GetBytes(Signature));
@@ -114,7 +102,7 @@ namespace MararCore.Linker
                 long difference = MainStream.Position - startPosition;
                 MainStream.Position = startPosition - 4;
                 MainStream.Write(GetBytes((int)difference));
-                MainStream.Position += difference + 4;
+                MainStream.Position += difference;
                 cache.Close();
                 File.Delete(GlobalCache);
             }
@@ -143,7 +131,7 @@ namespace MararCore.Linker
         {
             FileStream cacheFile = new(GlobalCache, FileMode.Open);
             GlobalCrypto.Encode(cacheFile, MainStream);
-            MainStream.Flush();
+            cacheFile.Close();
         }
 
         public void LinkTo(string rootDirectory)
@@ -157,6 +145,29 @@ namespace MararCore.Linker
             Compress(fsHeader);
 
             if (UseCrypto) Encrypt();
+
+            MainStream.Flush();
+        }
+
+        private string ReadString()
+        {
+            List<byte> buffer = [(byte)MainStream.ReadByte()];
+
+            while (buffer[^-1] > 0 || MainStream.Position < MainStream.Length)
+            {
+                buffer.Add((byte)MainStream.ReadByte());
+            }
+
+            return Encoding.UTF8.GetString(buffer.ToArray());
+        }
+        private void ReadPrimaryHeader()
+        {
+            uint localSignature = BitConverter.ToUInt32(MainStream.ReadBytes(4));
+            
+        }
+        public FSHeader ReadFS()
+        {
+
         }
     }
 }

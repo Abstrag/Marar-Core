@@ -10,23 +10,6 @@ namespace MararCore
         private static string Encoded = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\encoded.bin";
         private static string Decoded = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\decoded.bin";
 
-        private static FileStream[] GetFiles(string path)
-        {
-            string[] files = Directory.GetFiles(path);
-            FileStream[] result = new FileStream[files.Length];
-            for (long i = 0; i < files.LongLength; i++)
-            {
-                result[i] = new FileStream(files[i], FileMode.Open);
-            }
-            return result;
-        }
-        private static byte[] EncodeString(string str)
-        {
-            List<byte> buffer = new(Encoding.UTF8.GetBytes(str));
-            buffer.Add(0);
-            return buffer.ToArray();
-        }
-
         public static void Main()
         {
             CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
@@ -37,6 +20,8 @@ namespace MararCore
 
             MainLinker linker = new(output, MD5.HashData([0]), SHA256.HashData([0]));
             linker.UseTime = true;
+            linker.UseCrypto = true;
+            linker.UseCryptoFS = true;
             linker.LargeMode = false;
             linker.LinkTo(@"Y:\Users\bar32\Desktop\NaCondiciiDebug\TestDirectory");
 
