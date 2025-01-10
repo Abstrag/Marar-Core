@@ -2,6 +2,7 @@
 using MararCore.LotStreams;
 using System.Text;
 using static System.BitConverter;
+using static MararCore.Linker.DateTimeConverter;
 
 namespace MararCore.Linker
 {
@@ -14,7 +15,7 @@ namespace MararCore.Linker
         private byte GrandVersion = 0;
         private byte Version = 0;
         private byte Flags;
-        public DateTime CreationDateTime { get; set; }
+        public DateTime CreationDateTime;
         public bool UseTime { set => SetFlag(7, value); get => GetFlag(7); }
         public bool LargeMode { set => SetFlag(6, value); get => GetFlag(6); }
         public bool UseCrypto { set => SetFlag(5, value); get => GetFlag(5); }
@@ -63,7 +64,7 @@ namespace MararCore.Linker
             MainStream.WriteByte(GrandVersion);
             MainStream.WriteByte(Version);
             MainStream.WriteByte(Flags);
-            MainStream.Write(GetBytes(DateTimeConverter.Encode(CreationDateTime)));
+            MainStream.Write(GetBytes(EncodeDateTime(CreationDateTime)));
         }
         private void WriteFS(FSHeader fsHeader)
         {
@@ -79,7 +80,7 @@ namespace MararCore.Linker
             {
                 cache.Write(GetBytes(directory.Address));
                 cache.Write(EncodeString(directory.Name));
-                if (useTime) cache.Write(GetBytes(DateTimeConverter.Encode(directory.CreationDate)));
+                if (useTime) cache.Write(GetBytes(DateTimeConverter.EncodeDateTime(directory.CreationDate)));
             }
 
             cache.Write(GetBytes(fsHeader.Files.Count));
@@ -87,7 +88,7 @@ namespace MararCore.Linker
             {
                 FileFrame file = fsHeader.Files[i];
                 cache.Write(GetBytes(file.Address));
-                if (useTime) cache.Write(GetBytes(DateTimeConverter.Encode(file.CreationDate)));
+                if (useTime) cache.Write(GetBytes(DateTimeConverter.EncodeDateTime(file.CreationDate)));
                 if (largeMode) cache.Write(GetBytes(file.Length));
                 else cache.Write(GetBytes((uint)file.Length));
                 cache.Write(EncodeString(file.Name));
@@ -137,8 +138,8 @@ namespace MararCore.Linker
 
         public void LinkTo(string rootDirectory)
         {
-            FSHeader fsHeader = new(rootDirectory, LargeMode);
-            fsHeader.InitFS();
+            FSHeader fsHeader = new();
+            fsHeader.InitFS(rootDirectory, LargeMode);
 
             WritePrimaryHeader();
             WriteFS(fsHeader);
@@ -161,11 +162,11 @@ namespace MararCore.Linker
 
             return Encoding.UTF8.GetString(buffer.ToArray());
         }
-        private void ReadPrimaryHeader(bool ignoreSignature)
+        public void ReadPrimaryHeader(bool ignoreSignature)
         {
             if (!ignoreSignature)
             {
-                if (BitConverter.ToUInt32(MainStream.ReadBytes(4)) != Signature) 
+                if (ToUInt32(MainStream.ReadBytes(4)) != Signature) 
                     throw new Exception("Wrong signature");
             }
             else MainStream.Position += 4;
@@ -173,11 +174,50 @@ namespace MararCore.Linker
             GrandVersion = (byte)MainStream.ReadByte();
             Version = (byte)MainStream.ReadByte();
             Flags = (byte)MainStream.ReadByte();
-            //CreationDateTime = 
+            CreationDateTime = DecodeDateTime(ToInt32(MainStream.ReadBytes(4)));
         }
         public FSHeader ReadFS()
         {
-            return null;
+            FSHeader fsHeader = new();
+
+            for (uint directoryCount = ToUInt32(MainStream.ReadBytes(4)); directoryCount > 0; directoryCount--)
+            {
+                uint address = ToUInt32(MainStream.ReadBytes(4));
+
+                DateTime dateTime;
+                if (UseTime) dateTime = DecodeDateTime(ToInt32(MainStream.ReadBytes(4)));
+                else dateTime = new();
+
+                string name = ReadString();
+
+                fsHeader.Directories.Add(new(address, dateTime, name));
+            }
+            for (uint filesCount = ToUInt32(MainStream.ReadBytes(4)); filesCount > 0; filesCount--)
+            {
+                uint address = ToUInt32(MainStream.ReadBytes(4));
+
+                DateTime dateTime;
+                if (UseTime) dateTime = DecodeDateTime(ToInt32(MainStream.ReadBytes(4)));
+                else dateTime = new();
+
+                long length;
+                if (LargeMode) length = ToInt64(MainStream.ReadBytes(8));
+                else length = ToUInt32(MainStream.ReadBytes(4));
+
+                string name = ReadString();
+
+                fsHeader.Files.Add(new(address, dateTime, length, name));
+            }
+
+            return fsHeader;
+        }
+
+        public void LinkFrom(string rootDirectory, bool ignoreSignature = false)
+        {
+            ReadPrimaryHeader(ignoreSignature);
+            FSHeader fsHeader = ReadFS();
+
+            fsHeader.BindFS(rootDirectory);
         }
     }
 }

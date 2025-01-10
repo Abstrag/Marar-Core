@@ -6,24 +6,23 @@
         public long Length = length;
     }
 
-    internal class DirectoryFrame(uint address, DateTime creationDate, string name)
+    internal class DirectoryFrame(uint address, DateTime creationDate, string name, string? path = null)
     {
         public uint Address = address;
         public DateTime CreationDate = creationDate;
         public string Name = name;
+        public string? ExternalPath = path;
     }
-    internal class FileFrame(uint address, DateTime creationDate, string name, long length, string path)
+    internal class FileFrame(uint address, DateTime creationDate, long length, string name, string? path = null)
     {
         public uint Address = address;
         public DateTime CreationDate = creationDate;
         public string Name = name;
         public long Length = length;
-        public string ExternalPath = path;
+        public string? ExternalPath = path;
     }
-    internal class FSHeader(string path, bool largeMode)
+    internal class FSHeader()
     {
-        private readonly string RootDirectory = path;
-        private readonly bool LargeMode = largeMode;
         public List<FileFrame> Files = new();
         public List<DirectoryFrame> Directories = new();
 
@@ -33,7 +32,7 @@
             for (uint i = 0; i < paths.Length; i++)
             {
                 FileInfo file = new(paths[i]);
-                Files.Add(new(number, file.CreationTime, file.Name, file.Length, file.FullName));
+                Files.Add(new(number, file.CreationTime, file.Length, file.Name, file.FullName));
             }
 
             paths = Directory.GetDirectories(path);
@@ -44,16 +43,25 @@
                 AppendAll(directory.FullName, (uint)Directories.Count);
             }
         }
-        public void InitFS()
+        public void InitFS(string rootDirectory, bool largeMode)
         {
-            AppendAll(RootDirectory, 0);
-            if (!LargeMode)
+            AppendAll(rootDirectory, 0);
+            if (!largeMode)
             {
                 foreach (FileFrame file in Files)
                 {
                     if (file.Length > 0xFFFFFFFF) throw new LargeModeException(file.Name, file.Length);
                 }
             }
+        }
+
+        private void BindPath(string path, uint number)
+        {
+
+        }
+        public void BindFS(string rootDirectory)
+        {
+            BindPath(rootDirectory, 0);
         }
     }
 }

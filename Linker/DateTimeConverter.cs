@@ -2,13 +2,13 @@
 {
     internal static class DateTimeConverter
     {
-        private static uint GetBits(int origin, byte maskLength, byte shift)
+        private static int GetBits(int origin, byte maskLength, byte shift)
         {
             int mask = (int)(0xFFFFFFFF >> (32 - maskLength));
             origin &= (mask << shift);
-            return (uint)origin >> shift;
+            return origin >> shift;
         }
-        public static int Encode(DateTime dateTime)
+        public static int EncodeDateTime(DateTime dateTime)
         {
             int result = 0;
             result |= (dateTime.Year - 2000) << 25;
@@ -19,11 +19,16 @@
             result |= dateTime.Second / 2;
             return result;
         }
-        public static DateTime Decode(uint source)
+        public static DateTime DecodeDateTime(int source)
         {
             DateTime dateTime = new(0);
-            dateTime.AddYears(1999 + GetBits(source, ));
-            return DateTime.Now;
+            dateTime.AddYears(1999 + GetBits(source, 7, 25));
+            dateTime.AddMonths(GetBits(source, 4, 21) - 1);
+            dateTime.AddDays(GetBits(source, 5, 16) - 1);
+            dateTime.AddHours(GetBits(source, 5, 11) - 1);
+            dateTime.AddMinutes(GetBits(source, 6, 5) - 1);
+            dateTime.AddSeconds(GetBits(source, 5, 0) - 1);
+            return dateTime;
         }
     }
 }
