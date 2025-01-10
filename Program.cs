@@ -34,11 +34,12 @@ namespace MararCore
 
             FileStream output = new(Encoded, FileMode.Create);
 
-            MainLinker linker = new(output);
+            MainLinker linker = new(output, MD5.HashData([0]), SHA256.HashData([0]));
             linker.UseTime = true;
             linker.LargeMode = false;
-            linker.LinkTo(@"Y:\Users\bar32\Desktop\NaCondiciiDebug\TestDirectory", MD5.HashData([0]), SHA512.HashData([0]));
+            linker.LinkTo(@"Y:\Users\bar32\Desktop\NaCondiciiDebug\TestDirectory");
 
+            output.Close();
             CacheManager.Flush();
 /*
 #if false

@@ -23,10 +23,10 @@
     {
         private readonly string RootDirectory = path;
         private readonly bool LargeMode = largeMode;
-        public List<Stream> FileStreams;
-        public List<DirectoryFrame> Directories = new();
+        public List<Stream> FileStreams = new();
         public List<FileFrame> Files = new();
-        
+        public List<DirectoryFrame> Directories = new();
+
         private void AppendAll(string path, uint number)
         {
             string[] paths = Directory.GetFiles(path);

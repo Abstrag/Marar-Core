@@ -2,20 +2,20 @@
 
 namespace MararCore
 {
-    public class Crypto : FileProcessor
+    public class Crypto
     {
         public readonly Aes Alghorithm = Aes.Create();
         public byte[] GetIV() => Alghorithm.IV;     // 128 бит = 16 байт
         public byte[] GetKey() => Alghorithm.Key;   // 256 бит = 32 байта
 
-        public Crypto(Stream input, Stream output) : base(input, output)
+        public Crypto()
         {
             Alghorithm.GenerateIV();
             Alghorithm.GenerateKey();
             InitCrypto();
         }
 
-        public Crypto(byte[] iv, byte[] key, Stream input, Stream output) : base(input, output)
+        public Crypto(byte[] iv, byte[] key)
         {
             InitCrypto();
             Alghorithm.IV = iv;
@@ -29,28 +29,21 @@ namespace MararCore
             Alghorithm.BlockSize = 128;
         }
 
-        public override void Encode()
+        public void Encode(Stream input, Stream output)
         {
             ICryptoTransform encryptor = Alghorithm.CreateEncryptor();
-            CryptoStream cryptoStream = new(Output, encryptor, CryptoStreamMode.Write);
+            CryptoStream cryptoStream = new(output, encryptor, CryptoStreamMode.Write);
 
-            Input.CopyTo(cryptoStream);
+            input.CopyTo(cryptoStream);
             cryptoStream.FlushFinalBlock();
         }
-        public void Decode()
+        public void Decode(Stream input, Stream output)
         {
-            try
-            {
-                ICryptoTransform decryptor = Alghorithm.CreateDecryptor();
-                CryptoStream cryptoStream = new(Input, decryptor, CryptoStreamMode.Read);
-                cryptoStream.Flush();
-                cryptoStream.CopyTo(Output);
-                cryptoStream.Close();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
+            ICryptoTransform decryptor = Alghorithm.CreateDecryptor();
+            CryptoStream cryptoStream = new(input, decryptor, CryptoStreamMode.Read);
+            cryptoStream.Flush();
+            cryptoStream.CopyTo(output);
+            cryptoStream.Close();
         }
     }
 }

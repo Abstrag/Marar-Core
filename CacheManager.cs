@@ -15,7 +15,6 @@
         {
             int id = NameGenerator.Next();
             string fullPath = Path.Combine(CurrentDirectory, id.ToString());
-            File.Create(fullPath);
             return fullPath;
         }
         public static void Flush()
