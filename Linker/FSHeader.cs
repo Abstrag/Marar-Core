@@ -12,18 +12,18 @@
         public DateTime CreationDate = creationDate;
         public string Name = name;
     }
-    internal class FileFrame(uint address, DateTime creationDate, string name, long length)
+    internal class FileFrame(uint address, DateTime creationDate, string name, long length, string path)
     {
         public uint Address = address;
         public DateTime CreationDate = creationDate;
         public string Name = name;
         public long Length = length;
+        public string ExternalPath = path;
     }
     internal class FSHeader(string path, bool largeMode)
     {
         private readonly string RootDirectory = path;
         private readonly bool LargeMode = largeMode;
-        public List<Stream> FileStreams = new();
         public List<FileFrame> Files = new();
         public List<DirectoryFrame> Directories = new();
 
@@ -33,8 +33,7 @@
             for (uint i = 0; i < paths.Length; i++)
             {
                 FileInfo file = new(paths[i]);
-                Files.Add(new(number, file.CreationTime, file.Name, file.Length));
-                FileStreams.Add(file.OpenRead());
+                Files.Add(new(number, file.CreationTime, file.Name, file.Length, file.FullName));
             }
 
             paths = Directory.GetDirectories(path);

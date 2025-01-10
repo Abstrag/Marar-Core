@@ -1,5 +1,6 @@
 ﻿using MararCore.Compress.Haffman;
 using MararCore.LotStreams;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using static System.BitConverter;
 
@@ -7,7 +8,7 @@ namespace MararCore.Linker
 {
     internal class MainLinker
     {
-        private const uint Signature = 0x4DA072AF;
+        private const uint Signature = 0xAF72A04D;
         private const byte GrandVersion = 0;
         private const byte Version = 0;
         private readonly string GlobalCache = CacheManager.GetNewFile();
@@ -76,7 +77,7 @@ namespace MararCore.Linker
             MainStream.WriteByte(Flags);
             MainStream.Write(GetBytes(DateTimeConverter.Encode(DateTime.Now)));
         }
-        private Stream[] WriteFS(string rootDirectory)
+        private void WriteFS(FSHeader fsHeader)
         {
             bool useTime = UseTime;
             bool largeMode = LargeMode;
@@ -84,9 +85,6 @@ namespace MararCore.Linker
             Stream cache;
             if (UseCryptoFS) cache = new FileStream(GlobalCache, FileMode.Create);
             else cache = MainStream;
-
-            FSHeader fsHeader = new(rootDirectory, LargeMode);
-            fsHeader.InitFS();
 
             cache.Write(GetBytes(fsHeader.Directories.Count));
             foreach (DirectoryFrame directory in fsHeader.Directories)
@@ -121,29 +119,47 @@ namespace MararCore.Linker
                 cache.Close();
                 File.Delete(GlobalCache);
             }
-
-            return fsHeader.FileStreams.ToArray();
         }
-        private void Compress()
+        private void Compress(FSHeader fsHeader)
         {
+            Stream[] files = new Stream[fsHeader.Files.Count];
+            for (int i = 0; i < files.Length; i++)
+                files[i] = new FileStream(fsHeader.Files[i].ExternalPath, FileMode.Open);
 
-        }
+            Stream cacheFile;
+            if (UseCrypto) cacheFile = new FileStream(GlobalCache, FileMode.Create);
+            else cacheFile = MainStream;
 
-        public void LinkTo(string rootDirectory)
-        {
-            WritePrimaryHeader();
-
-            Stream[] files = WriteFS(rootDirectory);
-
-            FileStream cacheFile = new(GlobalCache, FileMode.Create);
             LotStreamReader lotReader = new(files);
 
             HaffmanCompressor compressor = new(lotReader, cacheFile);
             compressor.Encode();
-            cacheFile.Close();
-            cacheFile = new(GlobalCache, FileMode.Open);
+
+            if (UseCrypto) cacheFile.Close();
+
+            for (int i = 0; i < files.Length; i++) 
+                files[i].Close();
+        }
+        private void Encrypt()
+        {
+            FileStream cacheFile = new(GlobalCache, FileMode.Open);
             GlobalCrypto.Encode(cacheFile, MainStream);
             MainStream.Flush();
+        }
+
+        public void LinkTo(string rootDirectory)
+        {
+            FSHeader fsHeader = new(rootDirectory, LargeMode);
+            fsHeader.InitFS();
+
+            WritePrimaryHeader();
+            WriteFS(fsHeader);
+            Compress(fsHeader);
+            for (int i = 0; i < files.Length; i++)
+            {
+                files[i].Close();
+            }
+            if (UseCrypto) Encrypt();
         }
     }
 }
