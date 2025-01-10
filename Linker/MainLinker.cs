@@ -55,8 +55,7 @@ namespace MararCore.Linker
                     return [0];
                 }
                 */
-            List<byte> buffer = new(Encoding.UTF8.GetBytes(str)) { 0 };
-            return [.. buffer];
+            return Encoding.UTF8.GetBytes(str + '\0');
         }
         private string ReadString()
         {
@@ -99,10 +98,10 @@ namespace MararCore.Linker
             {
                 FileFrame file = fsHeader.Files[i];
                 cache.Write(GetBytes(file.Address));
-                cache.Write(EncodeString(file.Name));
+                if (useTime) cache.Write(GetBytes(DateTimeConverter.Encode(file.CreationDate)));
                 if (largeMode) cache.Write(GetBytes(file.Length));
                 else cache.Write(GetBytes((uint)file.Length));
-                if (useTime) cache.Write(GetBytes(DateTimeConverter.Encode(file.CreationDate)));
+                cache.Write(EncodeString(file.Name));
             }
 
             if (UseCryptoFS)
@@ -154,11 +153,9 @@ namespace MararCore.Linker
 
             WritePrimaryHeader();
             WriteFS(fsHeader);
+            //MainStream.Flush();
             Compress(fsHeader);
-            for (int i = 0; i < files.Length; i++)
-            {
-                files[i].Close();
-            }
+
             if (UseCrypto) Encrypt();
         }
     }

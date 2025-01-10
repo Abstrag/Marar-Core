@@ -30,6 +30,7 @@ namespace MararCore
         public static void Main()
         {
             CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
+            CacheManager.GlobalClear();
             CacheManager.InitManager();
 
             FileStream output = new(Encoded, FileMode.Create);

@@ -6,6 +6,11 @@
         public static string RootDirectory;
         public static string CurrentDirectory;
 
+        public static void GlobalClear()
+        {
+            Directory.Delete(RootDirectory, true);
+            Directory.CreateDirectory(RootDirectory);
+        }
         public static void InitManager()
         {
             CurrentDirectory = Path.Combine(RootDirectory, DateTime.Now.GetHashCode().ToString());
