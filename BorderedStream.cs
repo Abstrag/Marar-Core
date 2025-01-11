@@ -2,23 +2,25 @@
 {
     internal class BorderedStream : Stream
     {
+        private readonly long MaskLength;
         private readonly long Shift;
         private readonly Stream MainStream;
         public override bool CanRead => MainStream.CanRead;
         public override bool CanSeek => MainStream.CanSeek;
         public override bool CanWrite => MainStream.CanWrite;
-        public override long Length => MainStream.Length - Shift;
+        public override long Length => MaskLength;
         public override long Position
         {
             get => MainStream.Position - Shift;
             set => MainStream.Position = value + Shift;
         }
-
-        public BorderedStream(Stream mainStream, long shift)
+        public BorderedStream(Stream mainStream, long shift, long maskLength)
         {
-            Shift = shift;
             MainStream = mainStream;
+            Shift = shift;
+            MaskLength = maskLength;
         }
+        public BorderedStream(Stream mainStream, long shift) : this(mainStream, shift, mainStream.Length - shift) { }
         public BorderedStream(Stream mainStream) : this(mainStream, mainStream.Position) { }
 
         public override void Flush()

@@ -214,11 +214,17 @@ namespace MararCore.Linker
         public void ReadFS()
         {
             MainStream.Position = 11;
+            string? cache = CacheManager.GetNewFile();
+            Stream cacheFile;
 
             if (UseCryptoFS)
             {
-                long headerLength = ToInt16(MainStream.ReadBytes(8));
+                cacheFile = new FileStream(cache, FileMode.Create);
+                long headerLength = ToInt64(MainStream.ReadBytes(8));
+                
+
             }
+            else cacheFile = MainStream;
 
             for (uint directoryCount = ToUInt32(MainStream.ReadBytes(4)); directoryCount > 0; directoryCount--)
             {

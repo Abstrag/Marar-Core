@@ -55,9 +55,9 @@
         {
             return $"{tuple.Item1}:{tuple.Item2}";
         }
-        public static byte[] ReadBytes(this Stream stream, long bufferLength)
+        public static byte[] ReadBytes(this Stream stream, long bufferSize)
         {
-            byte[] buffer = new byte[bufferLength];
+            byte[] buffer = new byte[bufferSize];
             stream.ReadExactly(buffer);
             return buffer;
         }
