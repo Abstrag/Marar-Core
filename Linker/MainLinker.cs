@@ -99,12 +99,12 @@ namespace MararCore.Linker
             {
                 cache.Close();
                 cache = new FileStream(GlobalCache,  FileMode.Open);
-                MainStream.Position += 4;
+                MainStream.Position += 8;
                 long startPosition = MainStream.Position;
                 GlobalCrypto.Encode(cache, MainStream);
                 long difference = MainStream.Position - startPosition;
-                MainStream.Position = startPosition - 4;
-                MainStream.Write(GetBytes((int)difference));
+                MainStream.Position = startPosition - 8;
+                MainStream.Write(GetBytes(difference));
                 MainStream.Position += difference;
                 cache.Close();
                 File.Delete(GlobalCache);
@@ -175,6 +175,7 @@ namespace MararCore.Linker
             FileStream cacheFile = new(GlobalCache, FileMode.Create);
             BorderedStream streamMask = new(MainStream);
             GlobalCrypto.Decode(streamMask, cacheFile);
+            cacheFile.Close();
         }
         private void Decompress()
         {
@@ -184,8 +185,16 @@ namespace MararCore.Linker
 
             LotStreamReader lotReader = new(files);
             Stream cacheFile;
-            if (UseCrypto) cacheFile = new FileStream(GlobalCache, FileMode.Create);
+            if (UseCrypto) cacheFile = new FileStream(GlobalCache, FileMode.Open);
             else cacheFile = MainStream;
+
+            HaffmanCompressor decompressor = new(cacheFile, lotReader);
+            decompressor.Decode();
+
+            if (UseCrypto) cacheFile.Close();
+
+            for (int i = 0; i < files.Length; i++)
+                files[i].Close();
         }
         public void ReadPrimaryHeader(bool ignoreSignature = false)
         {
@@ -205,6 +214,11 @@ namespace MararCore.Linker
         public void ReadFS()
         {
             MainStream.Position = 11;
+
+            if (UseCryptoFS)
+            {
+                long headerLength = ToInt16(MainStream.ReadBytes(8));
+            }
 
             for (uint directoryCount = ToUInt32(MainStream.ReadBytes(4)); directoryCount > 0; directoryCount--)
             {
@@ -243,6 +257,7 @@ namespace MararCore.Linker
             FileHeader.BindFS(rootDirectory);
             CreateFS();
 
+            if (UseCrypto) Decrypt();
             Decompress();
         }
     }

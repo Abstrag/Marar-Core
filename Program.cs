@@ -13,7 +13,7 @@ namespace MararCore
 
         public static void Main()
         {
-            CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
+            /*CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
             CacheManager.GlobalClear();
             CacheManager.InitManager();
 
@@ -22,9 +22,9 @@ namespace MararCore
             MainLinker linker = new(input);
             linker.LinkFrom(LocalDirectory);
 
-            CacheManager.Flush();
+            CacheManager.Flush();*/
 
-            /*CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
+            CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
             CacheManager.GlobalClear();
             CacheManager.InitManager();
 
@@ -32,13 +32,13 @@ namespace MararCore
 
             MainLinker linker = new(output, MD5.HashData([0]), SHA256.HashData([0]));
             linker.UseTime = true;
-            linker.UseCrypto = false;
-            linker.UseCryptoFS = false;
+            linker.UseCrypto = true;
+            linker.UseCryptoFS = true;
             linker.LargeMode = false;
             linker.LinkTo(@"Y:\Users\bar32\Desktop\NaCondiciiDebug\TestDirectory");
 
             output.Close();
-            CacheManager.Flush();*/
+            CacheManager.Flush();
 
             /*FileStream output = new(Encoded, FileMode.Create);
 

@@ -88,9 +88,9 @@
         }
         public override void Flush()
         {
-            foreach (var stream in Streams)
+            for (int i = 0; i < Streams.Length; i++)
             {
-                stream.Flush();
+                Streams[i].Flush();
             }
         }
         public override void Write(byte[] buffer, int offset, int count)
