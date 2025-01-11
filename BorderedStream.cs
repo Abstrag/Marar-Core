@@ -19,6 +19,7 @@
             Shift = shift;
             MainStream = mainStream;
         }
+        public BorderedStream(Stream mainStream) : this(mainStream, mainStream.Position) { }
 
         public override void Flush()
         {

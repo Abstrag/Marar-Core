@@ -55,13 +55,25 @@
             }
         }
 
-        private void BindPath(string path, uint number)
-        {
-
+        private void BindPath(int number)
+        {          
+            for (int i = 0; i < Files.Count; i++)
+            {
+                if (Files[i].Address == number) Files[i].ExternalPath = Path.Combine(Directories[number].ExternalPath, Files[i].Name);
+            }
+            for (int i = 1; i < Directories.Count; i++)
+            {
+                if (Directories[i].Address == number)
+                {
+                    Directories[i].ExternalPath = Path.Combine(Directories[number].ExternalPath, Directories[i].Name);
+                    BindPath(i);
+                }
+            }
         }
         public void BindFS(string rootDirectory)
         {
-            BindPath(rootDirectory, 0);
+            Directories.Insert(0, new(0, Directory.GetCreationTime(rootDirectory), Path.GetFileName(rootDirectory), rootDirectory));
+            BindPath(0);
         }
     }
 }

@@ -1,15 +1,28 @@
 using MararCore.Linker;
+using System.Security.Cryptography;
+using static MararCore.Linker.DateTimeConverter;
 
 namespace MararCore
 {
     public class Program
     {
+        private static string LocalDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\DecodedDirectory";
         private static string Origin = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\gitter.jpg";
         private static string Encoded = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\encoded.bin";
         private static string Decoded = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\decoded.bin";
 
         public static void Main()
         {
+            CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
+            CacheManager.GlobalClear();
+            CacheManager.InitManager();
+
+            FileStream input = new(Encoded, FileMode.Open);
+
+            MainLinker linker = new(input);
+            linker.LinkFrom(LocalDirectory);
+
+            CacheManager.Flush();
 
             /*CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
             CacheManager.GlobalClear();
@@ -19,13 +32,24 @@ namespace MararCore
 
             MainLinker linker = new(output, MD5.HashData([0]), SHA256.HashData([0]));
             linker.UseTime = true;
-            linker.UseCrypto = true;
-            linker.UseCryptoFS = true;
+            linker.UseCrypto = false;
+            linker.UseCryptoFS = false;
             linker.LargeMode = false;
             linker.LinkTo(@"Y:\Users\bar32\Desktop\NaCondiciiDebug\TestDirectory");
 
             output.Close();
             CacheManager.Flush();*/
+
+            /*FileStream output = new(Encoded, FileMode.Create);
+
+            MainLinker linker = new(output, MD5.HashData([0]), SHA256.HashData([0]));
+            linker.UseTime = true;
+            linker.UseCrypto = false;
+            linker.UseCryptoFS = false;
+            linker.LargeMode = false;
+            linker.LinkTo(@"Y:\Users\bar32\Desktop\NaCondiciiDebug\TestDirectory");
+
+            output.Close();*/
             /*
             #if false
                         FileStream f1 = new(Origin, FileMode.Open);

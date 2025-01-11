@@ -22,12 +22,12 @@
         public static DateTime DecodeDateTime(int source)
         {
             DateTime dateTime = new(0);
-            dateTime.AddYears(1999 + GetBits(source, 7, 25));
-            dateTime.AddMonths(GetBits(source, 4, 21) - 1);
-            dateTime.AddDays(GetBits(source, 5, 16) - 1);
-            dateTime.AddHours(GetBits(source, 5, 11) - 1);
-            dateTime.AddMinutes(GetBits(source, 6, 5) - 1);
-            dateTime.AddSeconds(GetBits(source, 5, 0) - 1);
+            dateTime = dateTime.AddYears(1999 + GetBits(source, 7, 25));
+            dateTime = dateTime.AddMonths(GetBits(source, 4, 21) - 1);
+            dateTime = dateTime.AddDays(GetBits(source, 5, 16) - 1);
+            dateTime = dateTime.AddHours(GetBits(source, 5, 11));
+            dateTime = dateTime.AddMinutes(GetBits(source, 6, 5) - 1);
+            dateTime = dateTime.AddSeconds(GetBits(source, 5, 0) - 1);
             return dateTime;
         }
     }
