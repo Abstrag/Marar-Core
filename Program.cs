@@ -1,6 +1,5 @@
 using MararCore.Linker;
 using System.Security.Cryptography;
-using static MararCore.Linker.DateTimeConverter;
 
 namespace MararCore
 {
@@ -13,18 +12,18 @@ namespace MararCore
 
         public static void Main()
         {
-            /*CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
+            CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
             CacheManager.GlobalClear();
             CacheManager.InitManager();
 
             FileStream input = new(Encoded, FileMode.Open);
 
-            MainLinker linker = new(input);
+            MainLinker linker = new(input, MD5.HashData([0]), SHA256.HashData([0]));
             linker.LinkFrom(LocalDirectory);
 
-            CacheManager.Flush();*/
+            CacheManager.Flush();
 
-            CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
+            /*CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
             CacheManager.GlobalClear();
             CacheManager.InitManager();
 
@@ -38,7 +37,7 @@ namespace MararCore
             linker.LinkTo(@"Y:\Users\bar32\Desktop\NaCondiciiDebug\TestDirectory");
 
             output.Close();
-            CacheManager.Flush();
+            CacheManager.Flush();*/
 
             /*FileStream output = new(Encoded, FileMode.Create);
 

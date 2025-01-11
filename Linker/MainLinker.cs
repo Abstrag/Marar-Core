@@ -22,7 +22,7 @@ namespace MararCore.Linker
         public bool UseCrypto { set => SetFlag(5, value); get => GetFlag(5); }
         public bool UseCryptoFS { set => SetFlag(4, value); get => GetFlag(4); }
 
-        public MainLinker(Stream mainStream, byte[]? iv = null, byte[]? key = null)
+        public MainLinker(Stream mainStream, byte[]? iv, byte[]? key)
         {
             MainStream = mainStream;
             if (iv != null && key != null) GlobalCrypto = new(iv, key);
@@ -77,11 +77,11 @@ namespace MararCore.Linker
             else cache = MainStream;
 
             cache.Write(GetBytes(FileHeader.Directories.Count));
-            foreach (DirectoryFrame directory in FileHeader.Directories)
+            for (int i = 0; i < FileHeader.Directories.Count; i++)
             {
-                cache.Write(GetBytes(directory.Address));
-                if (useTime) cache.Write(GetBytes(EncodeDateTime(directory.CreationDate)));
-                cache.Write(EncodeString(directory.Name));
+                cache.Write(GetBytes(FileHeader.Directories[i].Address));
+                if (useTime) cache.Write(GetBytes(EncodeDateTime(FileHeader.Directories[i].CreationDate)));
+                cache.Write(EncodeString(FileHeader.Directories[i].Name));
             }
 
             cache.Write(GetBytes(FileHeader.Files.Count));
@@ -214,45 +214,52 @@ namespace MararCore.Linker
         public void ReadFS()
         {
             MainStream.Position = 11;
-            string? cache = CacheManager.GetNewFile();
             Stream cacheFile;
 
             if (UseCryptoFS)
             {
-                cacheFile = new FileStream(cache, FileMode.Create);
-                long headerLength = ToInt64(MainStream.ReadBytes(8));
-                
-
+                long length = ToInt64(MainStream.ReadBytes(8));
+                BorderedStream origin = new(MainStream, MainStream.Position, length);
+                cacheFile = new FileStream(GlobalCache, FileMode.Create);
+                GlobalCrypto.Decode(origin, cacheFile);
+                cacheFile.Close();
+                cacheFile = new FileStream(GlobalCache, FileMode.Open);
             }
             else cacheFile = MainStream;
 
-            for (uint directoryCount = ToUInt32(MainStream.ReadBytes(4)); directoryCount > 0; directoryCount--)
+            for (uint directoryCount = ToUInt32(cacheFile.ReadBytes(4)); directoryCount > 0; directoryCount--)
             {
-                uint address = ToUInt32(MainStream.ReadBytes(4));
+                uint address = ToUInt32(cacheFile.ReadBytes(4));
 
                 DateTime dateTime;
-                if (UseTime) dateTime = DecodeDateTime(ToInt32(MainStream.ReadBytes(4)));
+                if (UseTime) dateTime = DecodeDateTime(ToInt32(cacheFile.ReadBytes(4)));
                 else dateTime = new();
 
                 string name = ReadString();
 
                 FileHeader.Directories.Add(new(address, dateTime, name));
             }
-            for (uint filesCount = ToUInt32(MainStream.ReadBytes(4)); filesCount > 0; filesCount--)
+            for (uint filesCount = ToUInt32(cacheFile.ReadBytes(4)); filesCount > 0; filesCount--)
             {
-                uint address = ToUInt32(MainStream.ReadBytes(4));
+                uint address = ToUInt32(cacheFile.ReadBytes(4));
 
                 DateTime dateTime;
-                if (UseTime) dateTime = DecodeDateTime(ToInt32(MainStream.ReadBytes(4)));
+                if (UseTime) dateTime = DecodeDateTime(ToInt32(cacheFile.ReadBytes(4)));
                 else dateTime = new();
 
                 long length;
-                if (LargeMode) length = ToInt64(MainStream.ReadBytes(8));
-                else length = ToUInt32(MainStream.ReadBytes(4));
+                if (LargeMode) length = ToInt64(cacheFile.ReadBytes(8));
+                else length = ToUInt32(cacheFile.ReadBytes(4));
 
                 string name = ReadString();
 
                 FileHeader.Files.Add(new(address, dateTime, length, name));
+            }
+
+            if (UseCryptoFS)
+            {
+                cacheFile.Close();
+                File.Delete(GlobalCache);
             }
         }
 
@@ -260,6 +267,7 @@ namespace MararCore.Linker
         {
             ReadPrimaryHeader(ignoreSignature);
 
+            ReadFS();
             FileHeader.BindFS(rootDirectory);
             CreateFS();
 
