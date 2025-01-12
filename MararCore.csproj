@@ -11,7 +11,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Shell\" />
+    <Compile Remove="Shell\**" />
+    <EmbeddedResource Remove="Shell\**" />
+    <None Remove="Shell\**" />
   </ItemGroup>
 
 </Project>
