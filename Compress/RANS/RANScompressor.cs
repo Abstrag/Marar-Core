@@ -1,4 +1,4 @@
-﻿namespace MararCore.Compress.RANS
+﻿namespace Marar.Core.Compress.RANS
 {
     internal class RANScompressor(Stream input, Stream output) : FileProcessor(input, output)
     {

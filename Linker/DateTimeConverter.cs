@@ -1,4 +1,4 @@
-﻿namespace MararCore.Linker
+﻿namespace Marar.Core.Linker
 {
     public static class DateTimeConverter
     {

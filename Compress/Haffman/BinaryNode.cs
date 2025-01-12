@@ -1,4 +1,4 @@
-﻿namespace MararCore.Compress.Haffman
+﻿namespace Marar.Core.Compress.Haffman
 {
     internal struct NodeItem
     {

@@ -1,4 +1,4 @@
-﻿namespace MararCore
+﻿namespace Marar.Core
 {
     public abstract class FileProcessor
     {

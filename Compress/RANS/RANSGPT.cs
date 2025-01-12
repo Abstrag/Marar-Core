@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MararCore.Compress.RANS
+namespace Marar.Core.Compress.RANS
 {
     internal class RANSGPT
     {

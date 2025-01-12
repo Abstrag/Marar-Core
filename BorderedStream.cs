@@ -1,4 +1,4 @@
-﻿namespace MararCore
+﻿namespace Marar.Core
 {
     internal class BorderedStream : Stream
     {

@@ -1,18 +1,26 @@
-﻿using MararCore.Compress.Haffman;
-using MararCore.LotStreams;
+﻿using Marar.Core.Compress.Haffman;
+using Marar.Core.LotStreams;
 using System.Text;
 using static System.BitConverter;
-using static MararCore.Linker.DateTimeConverter;
+using static Marar.Core.Linker.DateTimeConverter;
 
-namespace MararCore.Linker
+namespace Marar.Core.Linker
 {
     public enum LinkerCondition
     {
-
+        PrimaryHeader,
+        FSHeader,
+        Crypto,
+        Compress
+    }
+    public interface ILinkerTrace
+    {
+        public void Trace(LinkerCondition condition);
     }
     public class MainLinker
     {
         private const uint Signature = 0xAF72A04D;
+        private readonly ILinkerTrace TraceManager;
         private readonly string GlobalCache = CacheManager.GetNewFile();
         private readonly Stream MainStream;
         private readonly Crypto GlobalCrypto;
@@ -25,8 +33,9 @@ namespace MararCore.Linker
         public bool UseCrypto { set => SetFlag(5, value); get => GetFlag(5); }
         public bool UseCryptoFS { set => SetFlag(4, value); get => GetFlag(4); }
 
-        public MainLinker(Stream mainStream, byte[]? iv, byte[]? key)
+        public MainLinker(Stream mainStream, ILinkerTrace traceManager, byte[]? iv, byte[]? key)
         {
+            TraceManager = traceManager;
             MainStream = mainStream;
             if (iv != null && key != null) GlobalCrypto = new(iv, key);
         }
@@ -155,7 +164,7 @@ namespace MararCore.Linker
             if (remains > 0) number -= remains - 16;
             return number;
         }
-        private string ReadString(Stream source)
+        private static string ReadString(Stream source)
         {
             List<byte> buffer = [(byte)source.ReadByte()];
 

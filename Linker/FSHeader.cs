@@ -1,4 +1,4 @@
-﻿namespace MararCore.Linker
+﻿namespace Marar.Core.Linker
 {
     public class LargeModeException(string path, long length) : Exception
     {

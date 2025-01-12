@@ -1,4 +1,4 @@
-﻿namespace MararCore.LotStreams
+﻿namespace Marar.Core.LotStreams
 {
     internal class LotStreamWriter : Stream
     {

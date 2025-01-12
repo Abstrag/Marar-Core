@@ -1,4 +1,4 @@
-﻿namespace MararCore.Compress.LZA
+﻿namespace Marar.Core.Compress.LZA
 {
     internal class LZ78 : FileProcessor
     {

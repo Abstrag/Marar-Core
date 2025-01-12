@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace MararCore
+namespace Marar.Core
 {
     internal class Crypto
     {
