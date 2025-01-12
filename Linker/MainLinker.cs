@@ -12,7 +12,6 @@ namespace MararCore.Linker
         private readonly string GlobalCache = CacheManager.GetNewFile();
         private readonly Stream MainStream;
         private readonly Crypto GlobalCrypto;
-        private byte GrandVersion = 0;
         private byte Version = 0;
         private byte Flags;
         public FSHeader FileHeader = new();
@@ -62,7 +61,6 @@ namespace MararCore.Linker
         private void WritePrimaryHeader()
         {
             MainStream.Write(GetBytes(Signature));
-            MainStream.WriteByte(GrandVersion);
             MainStream.WriteByte(Version);
             MainStream.WriteByte(Flags);
             MainStream.Write(GetBytes(EncodeDateTime(CreationDateTime)));
@@ -99,12 +97,12 @@ namespace MararCore.Linker
             {
                 cache.Close();
                 cache = new FileStream(GlobalCache,  FileMode.Open);
-                MainStream.Position += 4;
+                MainStream.Position += 8;
                 long startPosition = MainStream.Position;
                 GlobalCrypto.Encode(cache, MainStream);
                 long difference = MainStream.Position - startPosition;
-                MainStream.Position = startPosition - 4;
-                MainStream.Write(GetBytes((int)difference));
+                MainStream.Position = startPosition - 8;
+                MainStream.Write(GetBytes(difference));
                 MainStream.Position += difference;
                 cache.Close();
                 File.Delete(GlobalCache);
@@ -206,19 +204,23 @@ namespace MararCore.Linker
             }
             else MainStream.Position += 4;
 
-            GrandVersion = (byte)MainStream.ReadByte();
             Version = (byte)MainStream.ReadByte();
             Flags = (byte)MainStream.ReadByte();
             CreationDateTime = DecodeDateTime(ToInt32(MainStream.ReadBytes(4)));
         }
         public void ReadFS()
         {
-            MainStream.Position = 11;
+            MainStream.Position = 10;
             Stream cacheFile;
 
             if (UseCryptoFS)
             {
-                string cache = CacheManager.GetNewFile();
+                long length = ToInt64(MainStream.ReadBytes(8));
+                cacheFile = new FileStream(GlobalCache, FileMode.Create);
+                GlobalCrypto.Decode(MainStream, cacheFile, length);
+                cacheFile.Close();
+                cacheFile = new FileStream(GlobalCache, FileMode.Open);
+                /*string cache = CacheManager.GetNewFile();
                 FileStream tempBuffer = new(cache, FileMode.Create);
 
                 int length = ToInt32(MainStream.ReadBytes(4));
@@ -232,7 +234,7 @@ namespace MararCore.Linker
                 cacheFile.Close();
                 cacheFile = new FileStream(GlobalCache, FileMode.Open);
                 tempBuffer.Close();
-                File.Delete(cache);
+                File.Delete(cache);*/
             }
             else cacheFile = MainStream;
 

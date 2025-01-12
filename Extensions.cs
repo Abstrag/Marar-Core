@@ -63,17 +63,17 @@
         }
         public static void SmartCopyTo(this Stream stream, Stream destination, long bytesCount)
         {
-            uint bufferLength = 65536;
+            int bufferLength = 65536;
             byte[] buffer = new byte[65536];
             
-            while (true)
+            while (bytesCount > 0)
             {
                 if (bytesCount <= bufferLength)
-                    bufferLength -= (uint)bytesCount;
-                int read = stream.Read(buffer, 0, buffer.Length);
+                    bufferLength = (int)bytesCount;
+                int read = stream.Read(buffer, 0, bufferLength);
                 if (read == 0) break;
                 destination.Write(buffer, 0, read);
-                bytesCount -= bufferLength;
+                bytesCount -= read;
             }
         }
     }
