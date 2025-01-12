@@ -10,4 +10,8 @@
     <AssemblyName>Marar.Core</AssemblyName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Shell\" />
+  </ItemGroup>
+
 </Project>
