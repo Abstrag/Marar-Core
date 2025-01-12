@@ -1,19 +1,19 @@
 ﻿namespace MararCore.Linker
 {
-    internal class LargeModeException(string path, long length) : Exception
+    public class LargeModeException(string path, long length) : Exception
     {
         public string Path = path;
         public long Length = length;
     }
 
-    internal class DirectoryFrame(uint address, DateTime creationDate, string name, string? path = null)
+    public class DirectoryFrame(uint address, DateTime creationDate, string name, string? path = null)
     {
         public uint Address = address;
         public DateTime CreationDate = creationDate;
         public string Name = name;
         public string? ExternalPath = path;
     }
-    internal class FileFrame(uint address, DateTime creationDate, long length, string name, string? path = null)
+    public class FileFrame(uint address, DateTime creationDate, long length, string name, string? path = null)
     {
         public uint Address = address;
         public DateTime CreationDate = creationDate;
@@ -21,7 +21,7 @@
         public long Length = length;
         public string? ExternalPath = path;
     }
-    internal class FSHeader()
+    public class FSHeader()
     {
         public List<FileFrame> Files = new();
         public List<DirectoryFrame> Directories = new();

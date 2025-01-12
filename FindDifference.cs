@@ -1,6 +1,6 @@
 ﻿namespace MararCore
 {
-    public class FindDifferences
+    internal class FindDifferences
     {
         public Stream Input { get; set; }
         public Stream Output { get; set; }

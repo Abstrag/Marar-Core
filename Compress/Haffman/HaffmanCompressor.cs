@@ -6,7 +6,7 @@
         public byte BitsCount = bitsCount;
     }
 
-    public class HaffmanCompressor(Stream input, Stream output) : FileProcessor(input, output)
+    internal class HaffmanCompressor(Stream input, Stream output) : FileProcessor(input, output)
     {
         private readonly ulong[] FrequencyDictionary = new ulong[256];
 

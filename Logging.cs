@@ -2,7 +2,7 @@
 
 namespace MararCore
 {
-    public class Logging
+    internal class Logging
     {
         public static FileStream LogFile = new(@"Y:\Users\bar32\Desktop\NaCondiciiDebug\trace.txt", FileMode.Create);
 

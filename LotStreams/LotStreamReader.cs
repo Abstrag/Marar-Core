@@ -1,6 +1,6 @@
 ﻿namespace MararCore.LotStreams
 {
-    public class LotStreamReader : Stream
+    internal class LotStreamReader : Stream
     {
         private Stream CurrentStream => Streams[StreamCounter];
         private long InternalPosition = 0;

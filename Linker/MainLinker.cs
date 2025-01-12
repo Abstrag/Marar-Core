@@ -6,7 +6,11 @@ using static MararCore.Linker.DateTimeConverter;
 
 namespace MararCore.Linker
 {
-    internal class MainLinker
+    public enum LinkerCondition
+    {
+
+    }
+    public class MainLinker
     {
         private const uint Signature = 0xAF72A04D;
         private readonly string GlobalCache = CacheManager.GetNewFile();

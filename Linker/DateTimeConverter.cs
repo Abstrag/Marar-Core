@@ -1,6 +1,6 @@
 ﻿namespace MararCore.Linker
 {
-    internal static class DateTimeConverter
+    public static class DateTimeConverter
     {
         private static int GetBits(int origin, byte maskLength, byte shift)
         {
@@ -26,8 +26,8 @@
             dateTime = dateTime.AddMonths(GetBits(source, 4, 21) - 1);
             dateTime = dateTime.AddDays(GetBits(source, 5, 16) - 1);
             dateTime = dateTime.AddHours(GetBits(source, 5, 11));
-            dateTime = dateTime.AddMinutes(GetBits(source, 6, 5) - 1);
-            dateTime = dateTime.AddSeconds(GetBits(source, 5, 0) - 1);
+            dateTime = dateTime.AddMinutes(GetBits(source, 6, 5));
+            dateTime = dateTime.AddSeconds(GetBits(source, 5, 0) * 2);
             return dateTime;
         }
     }

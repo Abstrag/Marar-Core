@@ -2,7 +2,7 @@
 
 namespace MararCore
 {
-    public class Crypto
+    internal class Crypto
     {
         public readonly Aes Alghorithm = Aes.Create();
         public byte[] GetIV() => Alghorithm.IV;     // 128 бит = 16 байт

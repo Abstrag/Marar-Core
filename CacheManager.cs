@@ -1,6 +1,6 @@
 ﻿namespace MararCore
 {
-    internal static class CacheManager
+    public static class CacheManager
     {
         private static Random NameGenerator = new();
         public static string RootDirectory;

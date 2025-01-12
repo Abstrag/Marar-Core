@@ -1,6 +1,6 @@
 ﻿namespace MararCore
 {
-    public class BitStream
+    internal class BitStream
     {
         private Stream Base;
         private byte LastByte = 0;

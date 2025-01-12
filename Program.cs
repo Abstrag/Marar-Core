@@ -19,7 +19,7 @@ namespace MararCore
             s1.SetLength(4);
             s1.ToArray();
             s2.ToArray();*/
-
+            
 #if false
             CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
             CacheManager.GlobalClear();
