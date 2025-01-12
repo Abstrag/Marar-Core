@@ -1,6 +1,6 @@
 ﻿namespace Marar.Shell
 {
-    public class Program
+    public class Launcher
     {
         private static string LocalDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\DecodedDirectory";
         private static string Origin = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\gitter.jpg";
@@ -11,7 +11,7 @@
         {
             MainShell shell = new();
 
-
+            Console.WriteLine("Hello, world!");
             /*#if false
                         CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
                         CacheManager.GlobalClear();
