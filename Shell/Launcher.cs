@@ -7,11 +7,9 @@
         private static string Encoded = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\encoded.bin";
         private static string Decoded = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\decoded.bin";
 
-        public static void Main(string[]? args)
+        public static int Main(string[]? args)
         {
-            MainShell shell = new();
-
-            Console.WriteLine("Hello, world!");
+            return MainShell.Run(args ?? []);
             /*#if false
                         CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
                         CacheManager.GlobalClear();

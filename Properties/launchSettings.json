@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MararProject": {
+      "commandName": "Project",
+      "commandLineArgs": "Hello world"
+    }
+  }
+}

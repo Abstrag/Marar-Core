@@ -23,7 +23,7 @@ namespace Marar.Core.Linker
         private readonly ILinkerTrace TraceManager;
         private readonly string GlobalCache = CacheManager.GetNewFile();
         private readonly Stream MainStream;
-        private readonly Crypto GlobalCrypto;
+        private Crypto GlobalCrypto;
         private byte Version = 0;
         private byte Flags;
         public FSHeader FileHeader = new();
@@ -33,11 +33,15 @@ namespace Marar.Core.Linker
         public bool UseCrypto { set => SetFlag(5, value); get => GetFlag(5); }
         public bool UseCryptoFS { set => SetFlag(4, value); get => GetFlag(4); }
 
-        public MainLinker(Stream mainStream, ILinkerTrace traceManager, byte[]? iv, byte[]? key)
+        public MainLinker(Stream mainStream, ILinkerTrace traceManager)
         {
             TraceManager = traceManager;
             MainStream = mainStream;
-            if (iv != null && key != null) GlobalCrypto = new(iv, key);
+        }
+
+        public void SetCrypto(byte[] iv, byte[] key)
+        {
+            GlobalCrypto = new(iv, key);
         }
         
         private bool GetFlag(byte shift)
@@ -53,22 +57,6 @@ namespace Marar.Core.Linker
 
         private static byte[] EncodeString(string str)
         {
-            /*
-                public static string Coding(byte[] data, string codePage = "utf-8")
-                {
-                    if (codePage == "utf-8") return Encoding.UTF8.GetString(data);
-                    if (codePage == "ascii") return Encoding.ASCII.GetString(data);
-                    if (codePage == "latin1") return Encoding.Latin1.GetString(data);
-                    return string.Empty;
-                }
-                public static byte[] Coding(string data, string codePage = "utf-8")
-                {
-                    if (codePage == "utf-8") return Encoding.UTF8.GetBytes(data);
-                    if (codePage == "ascii") return Encoding.ASCII.GetBytes(data);
-                    if (codePage == "latin1") return Encoding.Latin1.GetBytes(data);
-                    return [0];
-                }
-                */
             return Encoding.UTF8.GetBytes(str + '\0');
         }
         private void WritePrimaryHeader()
@@ -149,11 +137,18 @@ namespace Marar.Core.Linker
 
             FileHeader.InitFS(rootDirectory, LargeMode);
 
+            TraceManager.Trace(LinkerCondition.PrimaryHeader);
             WritePrimaryHeader();
+            TraceManager.Trace(LinkerCondition.FSHeader);
             WriteFS();
+            TraceManager.Trace(LinkerCondition.Compress);
             Compress();
 
-            if (UseCrypto) Encrypt();
+            if (UseCrypto)
+            {
+                TraceManager.Trace(LinkerCondition.Crypto);
+                Encrypt();
+            }
 
             MainStream.Flush();
         }
