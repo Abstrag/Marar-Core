@@ -3,6 +3,7 @@ using Marar.Core.LotStreams;
 using System.Text;
 using static System.BitConverter;
 using static Marar.Core.Linker.DateTimeConverter;
+using System.Security.Cryptography;
 
 namespace Marar.Core.Linker
 {
@@ -24,8 +25,8 @@ namespace Marar.Core.Linker
         private readonly string GlobalCache = CacheManager.GetNewFile();
         private readonly Stream MainStream;
         private Crypto GlobalCrypto;
-        private byte Version = 0;
         private byte Flags;
+        public byte Version = 0;
         public FSHeader FileHeader = new();
         public DateTime CreationDateTime;
         public bool UseTime { set => SetFlag(7, value); get => GetFlag(7); }
@@ -39,9 +40,9 @@ namespace Marar.Core.Linker
             MainStream = mainStream;
         }
 
-        public void SetCrypto(byte[] iv, byte[] key)
+        public void SetCrypto(byte[] key)
         {
-            GlobalCrypto = new(iv, key);
+            GlobalCrypto = new(MD5.HashData(key), key);
         }
         
         private bool GetFlag(byte shift)

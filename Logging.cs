@@ -1,10 +1,11 @@
-﻿using System.Text;
+﻿using Marar.Shell;
+using System.Text;
 
 namespace Marar.Core
 {
     internal class Logging
     {
-        public static FileStream LogFile = new(@"Y:\Users\bar32\Desktop\NaCondiciiDebug\trace.txt", FileMode.Create);
+        public static FileStream LogFile = new(Path.Combine(Launcher.RootDirectory, "log.txt"), FileMode.Create);
 
         public static void WriteLine(string message)
         {
