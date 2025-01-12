@@ -99,12 +99,12 @@ namespace MararCore.Linker
             {
                 cache.Close();
                 cache = new FileStream(GlobalCache,  FileMode.Open);
-                MainStream.Position += 8;
+                MainStream.Position += 4;
                 long startPosition = MainStream.Position;
                 GlobalCrypto.Encode(cache, MainStream);
                 long difference = MainStream.Position - startPosition;
-                MainStream.Position = startPosition - 8;
-                MainStream.Write(GetBytes(difference));
+                MainStream.Position = startPosition - 4;
+                MainStream.Write(GetBytes((int)difference));
                 MainStream.Position += difference;
                 cache.Close();
                 File.Delete(GlobalCache);
@@ -218,12 +218,21 @@ namespace MararCore.Linker
 
             if (UseCryptoFS)
             {
-                long length = ToInt64(MainStream.ReadBytes(8));
-                BorderedStream origin = new(MainStream, MainStream.Position, length);
-                cacheFile = new FileStream(GlobalCache, FileMode.Create);
-                GlobalCrypto.Decode(origin, cacheFile);
+                string cache = CacheManager.GetNewFile();
+                FileStream tempBuffer = new(cache, FileMode.Create);
+
+                int length = ToInt32(MainStream.ReadBytes(4));
+                MainStream.CopyTo(tempBuffer, length);
+                tempBuffer.Close();
+
+                tempBuffer = new(cache, FileMode.Open);
+                cacheFile = new FileStream(cache, FileMode.Create);
+
+                GlobalCrypto.Decode(tempBuffer, cacheFile);
                 cacheFile.Close();
                 cacheFile = new FileStream(GlobalCache, FileMode.Open);
+                tempBuffer.Close();
+                File.Delete(cache);
             }
             else cacheFile = MainStream;
 

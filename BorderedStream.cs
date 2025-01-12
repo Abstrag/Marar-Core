@@ -29,6 +29,7 @@
         }
         public override int Read(byte[] buffer, int offset, int count)
         {
+            if (count > Length) count = (int)(Length - Position);
             return MainStream.Read(buffer, offset, count);
         }
         public override int ReadByte()

@@ -33,6 +33,7 @@ namespace MararCore
         {
             ICryptoTransform encryptor = Alghorithm.CreateEncryptor();
             CryptoStream cryptoStream = new(output, encryptor, CryptoStreamMode.Write);
+            
 
             input.CopyTo(cryptoStream);
             cryptoStream.FlushFinalBlock();
@@ -41,6 +42,7 @@ namespace MararCore
         {
             ICryptoTransform decryptor = Alghorithm.CreateDecryptor();
             CryptoStream cryptoStream = new(input, decryptor, CryptoStreamMode.Read);
+            cryptoStream.SetLength(1);
             cryptoStream.Flush();
             cryptoStream.CopyTo(output);
             cryptoStream.Close();
