@@ -97,13 +97,8 @@ namespace MararCore.Linker
             {
                 cache.Close();
                 cache = new FileStream(GlobalCache,  FileMode.Open);
-                MainStream.Position += 8;
-                long startPosition = MainStream.Position;
+                MainStream.Write(GetBytes(cache.Length));
                 GlobalCrypto.Encode(cache, MainStream);
-                long difference = MainStream.Position - startPosition;
-                MainStream.Position = startPosition - 8;
-                MainStream.Write(GetBytes(difference));
-                MainStream.Position += difference;
                 cache.Close();
                 File.Delete(GlobalCache);
             }
@@ -150,13 +145,13 @@ namespace MararCore.Linker
             MainStream.Flush();
         }
 
-        private string ReadString()
+        private string ReadString(Stream source)
         {
-            List<byte> buffer = [(byte)MainStream.ReadByte()];
+            List<byte> buffer = [(byte)source.ReadByte()];
 
-            while (buffer[^1] > 0 && MainStream.Position < MainStream.Length)
+            while (buffer[^1] > 0 && source.Position < source.Length)
             {
-                buffer.Add((byte)MainStream.ReadByte());
+                buffer.Add((byte)source.ReadByte());
             }
             buffer.RemoveAt(buffer.Count - 1);
             return Encoding.UTF8.GetString(buffer.ToArray());
@@ -171,22 +166,26 @@ namespace MararCore.Linker
         private void Decrypt()
         {
             FileStream cacheFile = new(GlobalCache, FileMode.Create);
-            BorderedStream streamMask = new(MainStream);
-            GlobalCrypto.Decode(streamMask, cacheFile);
+            GlobalCrypto.Decode(MainStream, cacheFile, MainStream.Length - MainStream.Position);
             cacheFile.Close();
         }
         private void Decompress()
         {
+            long[] lengths = new long[FileHeader.Files.Count];
             Stream[] files = new Stream[FileHeader.Files.Count];
             for (int i = 0; i < files.Length; i++)
+            {
+                lengths[i] = FileHeader.Files[i].Length;
                 files[i] = new FileStream(FileHeader.Files[i].ExternalPath, FileMode.Create);
+            }
+                
 
-            LotStreamReader lotReader = new(files);
+            LotStreamWriter lotWriter = new(files, lengths);
             Stream cacheFile;
             if (UseCrypto) cacheFile = new FileStream(GlobalCache, FileMode.Open);
             else cacheFile = MainStream;
 
-            HaffmanCompressor decompressor = new(cacheFile, lotReader);
+            HaffmanCompressor decompressor = new(cacheFile, lotWriter);
             decompressor.Decode();
 
             if (UseCrypto) cacheFile.Close();
@@ -220,21 +219,6 @@ namespace MararCore.Linker
                 GlobalCrypto.Decode(MainStream, cacheFile, length);
                 cacheFile.Close();
                 cacheFile = new FileStream(GlobalCache, FileMode.Open);
-                /*string cache = CacheManager.GetNewFile();
-                FileStream tempBuffer = new(cache, FileMode.Create);
-
-                int length = ToInt32(MainStream.ReadBytes(4));
-                MainStream.CopyTo(tempBuffer, length);
-                tempBuffer.Close();
-
-                tempBuffer = new(cache, FileMode.Open);
-                cacheFile = new FileStream(cache, FileMode.Create);
-
-                GlobalCrypto.Decode(tempBuffer, cacheFile);
-                cacheFile.Close();
-                cacheFile = new FileStream(GlobalCache, FileMode.Open);
-                tempBuffer.Close();
-                File.Delete(cache);*/
             }
             else cacheFile = MainStream;
 
@@ -246,7 +230,7 @@ namespace MararCore.Linker
                 if (UseTime) dateTime = DecodeDateTime(ToInt32(cacheFile.ReadBytes(4)));
                 else dateTime = new();
 
-                string name = ReadString();
+                string name = ReadString(cacheFile);
 
                 FileHeader.Directories.Add(new(address, dateTime, name));
             }
@@ -262,7 +246,7 @@ namespace MararCore.Linker
                 if (LargeMode) length = ToInt64(cacheFile.ReadBytes(8));
                 else length = ToUInt32(cacheFile.ReadBytes(4));
 
-                string name = ReadString();
+                string name = ReadString(cacheFile);
 
                 FileHeader.Files.Add(new(address, dateTime, length, name));
             }

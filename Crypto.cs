@@ -42,7 +42,6 @@ namespace MararCore
             CryptoStream cryptoStream = new(input, decryptor, CryptoStreamMode.Read);
             cryptoStream.Flush();
             cryptoStream.SmartCopyTo(output, bytesCount);
-            cryptoStream.Close();
         }
         public void Decode(Stream input, Stream output)
         {
@@ -51,7 +50,6 @@ namespace MararCore
             cryptoStream.SetLength(1);
             cryptoStream.Flush();
             cryptoStream.CopyTo(output);
-            cryptoStream.Close();
         }
     }
 }
