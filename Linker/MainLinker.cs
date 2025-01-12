@@ -145,6 +145,12 @@ namespace MararCore.Linker
             MainStream.Flush();
         }
 
+        private static long ImproveNumber(long number)
+        {
+            long remains = number % 16;
+            if (remains > 0) number -= remains - 16;
+            return number;
+        }
         private string ReadString(Stream source)
         {
             List<byte> buffer = [(byte)source.ReadByte()];
@@ -156,49 +162,12 @@ namespace MararCore.Linker
             buffer.RemoveAt(buffer.Count - 1);
             return Encoding.UTF8.GetString(buffer.ToArray());
         }
-        private void CreateFS()
-        {
-            for (int i = 0; i < FileHeader.Directories.Count; i++)
-            {
-                Directory.CreateDirectory(FileHeader.Directories[i].ExternalPath);
-            }
-        }
-        private void Decrypt()
-        {
-            FileStream cacheFile = new(GlobalCache, FileMode.Create);
-            GlobalCrypto.Decode(MainStream, cacheFile, MainStream.Length - MainStream.Position);
-            cacheFile.Close();
-        }
-        private void Decompress()
-        {
-            long[] lengths = new long[FileHeader.Files.Count];
-            Stream[] files = new Stream[FileHeader.Files.Count];
-            for (int i = 0; i < files.Length; i++)
-            {
-                lengths[i] = FileHeader.Files[i].Length;
-                files[i] = new FileStream(FileHeader.Files[i].ExternalPath, FileMode.Create);
-            }
-                
-
-            LotStreamWriter lotWriter = new(files, lengths);
-            Stream cacheFile;
-            if (UseCrypto) cacheFile = new FileStream(GlobalCache, FileMode.Open);
-            else cacheFile = MainStream;
-
-            HaffmanCompressor decompressor = new(cacheFile, lotWriter);
-            decompressor.Decode();
-
-            if (UseCrypto) cacheFile.Close();
-
-            for (int i = 0; i < files.Length; i++)
-                files[i].Close();
-        }
         public void ReadPrimaryHeader(bool ignoreSignature = false)
         {
             MainStream.Position = 0;
             if (!ignoreSignature)
             {
-                if (ToUInt32(MainStream.ReadBytes(4)) != Signature) 
+                if (ToUInt32(MainStream.ReadBytes(4)) != Signature)
                     throw new Exception("Wrong signature");
             }
             else MainStream.Position += 4;
@@ -219,6 +188,7 @@ namespace MararCore.Linker
                 GlobalCrypto.Decode(MainStream, cacheFile, length);
                 cacheFile.Close();
                 cacheFile = new FileStream(GlobalCache, FileMode.Open);
+                MainStream.Position = 18 + ImproveNumber(length);
             }
             else cacheFile = MainStream;
 
@@ -256,6 +226,44 @@ namespace MararCore.Linker
                 cacheFile.Close();
                 File.Delete(GlobalCache);
             }
+        }
+        private void CreateFS()
+        {
+            for (int i = 0; i < FileHeader.Directories.Count; i++)
+            {
+                Directory.CreateDirectory(FileHeader.Directories[i].ExternalPath);
+            }
+        }
+        private void Decrypt()
+        {
+            FileStream cacheFile = new(GlobalCache, FileMode.Create);
+            //GlobalCrypto.Decode(MainStream, cacheFile, MainStream.Length - MainStream.Position);
+            GlobalCrypto.Decode(MainStream, cacheFile);
+            cacheFile.Close();
+        }
+        private void Decompress()
+        {
+            long[] lengths = new long[FileHeader.Files.Count];
+            Stream[] files = new Stream[FileHeader.Files.Count];
+            for (int i = 0; i < files.Length; i++)
+            {
+                lengths[i] = FileHeader.Files[i].Length;
+                files[i] = new FileStream(FileHeader.Files[i].ExternalPath, FileMode.Create);
+            }
+                
+
+            LotStreamWriter lotWriter = new(files, lengths);
+            Stream cacheFile;
+            if (UseCrypto) cacheFile = new FileStream(GlobalCache, FileMode.Open);
+            else cacheFile = MainStream;
+
+            HaffmanCompressor decompressor = new(cacheFile, lotWriter);
+            decompressor.Decode();
+
+            if (UseCrypto) cacheFile.Close();
+
+            for (int i = 0; i < files.Length; i++)
+                files[i].Close();
         }
 
         public void LinkFrom(string rootDirectory, bool ignoreSignature = false)

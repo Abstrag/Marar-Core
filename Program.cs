@@ -20,7 +20,7 @@ namespace MararCore
             s1.ToArray();
             s2.ToArray();*/
 
-#if true
+#if false
             CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
             CacheManager.GlobalClear();
             CacheManager.InitManager();
@@ -42,7 +42,7 @@ namespace MararCore
             linker.UseTime = true;
             linker.UseCrypto = true;
             linker.UseCryptoFS = true;
-            linker.LargeMode = false;
+            linker.LargeMode = true;
             linker.LinkTo(@"Y:\Users\bar32\Desktop\NaCondiciiDebug\TestDirectory");
 
             output.Close();
