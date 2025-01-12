@@ -1,6 +1,6 @@
 ﻿namespace MararCore.Compress.Arithmetic
 {
-    public class ArithmeticCompressor : FileProcessor
+    internal class ArithmeticCompressor : FileProcessor
     {
         private Dictionary<byte, long> IntDictionary { get; set; } = new();
         private long SourceLength { get; set; } = 0;

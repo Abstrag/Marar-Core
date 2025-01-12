@@ -5,7 +5,7 @@
         public byte[] Data;
     }*/
 
-    public class RLZ : FileProcessor
+    internal class RLZ : FileProcessor
     {
         private List<byte[]> Dictionary = new();
         public RLZ(Stream input, Stream output) : base(input, output) { }

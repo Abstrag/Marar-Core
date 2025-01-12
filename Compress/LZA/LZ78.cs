@@ -1,6 +1,6 @@
 ﻿namespace MararCore.Compress.LZA
 {
-    public class LZ78 : FileProcessor
+    internal class LZ78 : FileProcessor
     {
         private byte CodeLength;
         private ushort DictionaryLength = 0;

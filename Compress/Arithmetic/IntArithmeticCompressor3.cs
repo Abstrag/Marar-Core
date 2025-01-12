@@ -1,6 +1,6 @@
 ﻿namespace MararCore.Compress.Arithmetic
 {
-    public class IntArithmeticCompressor3 : FileProcessor
+    internal class IntArithmeticCompressor3 : FileProcessor
     {
         private readonly byte CodeLength;
         private readonly ulong MaxCode = 1;
