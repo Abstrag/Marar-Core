@@ -100,12 +100,45 @@ namespace Marar.Shell
         }
         private static void PrintFileSystem()
         {
-            Console.WriteLine("Black hole: it is not implemented");
-            return;
+            //Console.WriteLine("Black hole: it is not implemented");
+            //return;
+            /*void BindPath(int number)
+            {
+                for (int i = 0; i < Files.Count; i++)
+                {
+                    if (Files[i].Address == number) Files[i].ExternalPath = Path.Combine(Directories[number].ExternalPath, Files[i].Name);
+                }
+                for (int i = 1; i < Directories.Count; i++)
+                {
+                    if (Directories[i].Address == number)
+                    {
+                        Directories[i].ExternalPath = Path.Combine(Directories[number].ExternalPath, Directories[i].Name);
+                        BindPath(i);
+                    }
+                }
+            }*/
             FileStream archive = new(Args[^1], FileMode.Open);
             Archive = new(archive, LinkerTrace);
             Archive.ReadFS();
-            
+
+            void printLine(int number, int bufferLength)
+            {
+                for (int i = 1; i < Archive.FileHeader.Directories.Count; i++)
+                {
+                    if (Archive.FileHeader.Directories[i].Address == number)
+                    {
+                        Console.WriteLine('D' + new string(' ', bufferLength) + Archive.FileHeader.Directories[i].Name);
+                        printLine(i, bufferLength + 1);
+                    }
+                }
+                for (int i = 0; i < Archive.FileHeader.Files.Count; i++)
+                {
+                    if (Archive.FileHeader.Directories[i].Address == number) Console.WriteLine('F' + new string(' ', bufferLength) + Archive.FileHeader.Directories[i].Name);
+                }
+            }
+
+            Console.WriteLine("File system:");
+            printLine(0, 0);
         }
         private static void Encode()
         {
@@ -120,13 +153,13 @@ namespace Marar.Shell
                         Archive.UseCryptoFS = true;
                         break;
                     case "-c":
-                        Archive.UseCryptoFS = true;
+                        Archive.UseCrypto = true;
                         break;
                     case "-l":
-                        Archive.UseCryptoFS = true;
+                        Archive.LargeMode = true;
                         break;
                     case "-t":
-                        Archive.UseCryptoFS = true;
+                        Archive.UseTime = true;
                         break;
                 }
             }
@@ -142,6 +175,7 @@ namespace Marar.Shell
 
             Archive.LinkTo(Args[^2]);
             archive.Close();
+            Console.WriteLine("Succesful encoding");
         }
         private static void Decode()
         {

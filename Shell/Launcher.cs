@@ -12,13 +12,18 @@ namespace Marar.Shell
         public static byte LinkerVersion = 0;
         public static string CommonVersion = "0.0.1 alpha";
         public static string RootDirectory = Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName;
+        public static Stream LogStream = new FileStream(Path.Combine(RootDirectory, "log.txt"), FileMode.Create);
 
         public static int Main(string[]? args)
         {
-            CacheManager.RootDirectory = RootDirectory;
-            MainShell.LinkerTrace = new LinkerTrace(Path.Combine(RootDirectory, "log.txt"));
+            CacheManager.InitManager(Path.Combine(RootDirectory, "temp"));
+            MainShell.LinkerTrace = new LinkerTrace(LogStream);
 
-            return MainShell.Run(args ?? []);
+            int result = MainShell.Run(args ?? []);
+
+            LogStream.Close();
+            CacheManager.Flush();
+            return result;
             /*#if false
                         CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
                         CacheManager.GlobalClear();

@@ -252,15 +252,15 @@ namespace Marar.Core.Linker
         }
         private void Decompress()
         {
+            bool useTime = UseTime;
             long[] lengths = new long[FileHeader.Files.Count];
             Stream[] files = new Stream[FileHeader.Files.Count];
             for (int i = 0; i < files.Length; i++)
             {
                 lengths[i] = FileHeader.Files[i].Length;
                 files[i] = new FileStream(FileHeader.Files[i].ExternalPath, FileMode.Create);
+                if (useTime) File.SetCreationTime(FileHeader.Files[i].ExternalPath, FileHeader.Files[i].CreationDate);
             }
-                
-
             LotStreamWriter lotWriter = new(files, lengths);
             Stream cacheFile;
             if (UseCrypto) cacheFile = new FileStream(GlobalCache, FileMode.Open);

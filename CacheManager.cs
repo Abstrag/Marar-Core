@@ -3,16 +3,17 @@
     public static class CacheManager
     {
         private static Random NameGenerator = new();
-        public static string RootDirectory;
-        public static string CurrentDirectory;
+        private static string RootDirectory;
+        public static string CurrentDirectory { get; private set; }
 
         public static void GlobalClear()
         {
             Directory.Delete(RootDirectory, true);
             Directory.CreateDirectory(RootDirectory);
         }
-        public static void InitManager()
+        public static void InitManager(string rootDirectory)
         {
+            RootDirectory = rootDirectory;
             CurrentDirectory = Path.Combine(RootDirectory, DateTime.Now.GetHashCode().ToString());
             Directory.CreateDirectory(CurrentDirectory);
         }

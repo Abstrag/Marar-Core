@@ -153,7 +153,7 @@
             BitStream reader = new(Input);
             reader.StartRead();
 
-            while (Input.Position < Input.Length)
+            while (true)
             {
                 tempNode = root;
                 while (true)
@@ -166,13 +166,23 @@
                     }
                     else
                     {
-                        byte bit = reader.ReverseReadBit();
+                        byte bit;
+                        try
+                        {
+                            bit = reader.ReverseReadBit();
+                        }
+                        catch
+                        {
+                            break;
+                        }                        
                         //if (bit == 0) Logging.Write(0.ToString());
                         //else Logging.Write(1.ToString());
                         tempNode = tempNode.GetNode(bit);
                     }
                 }
             }
+
+            Output.Flush();
             /*BinaryCode[] codes = GetCodes(root);
             byte maxLength = 0;
             byte minLength = 255;
