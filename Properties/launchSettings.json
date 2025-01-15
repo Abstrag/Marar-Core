@@ -2,7 +2,7 @@
   "profiles": {
     "MararProject": {
       "commandName": "Project",
-      "commandLineArgs": "-p \"Y:\\Users\\bar32\\Desktop\\NaCondiciiDebug\\encoded.bin\""
+      "commandLineArgs": "-d \"Y:\\Users\\bar32\\Desktop\\NaCondiciiDebug\\encoded.bin\" \"Y:\\Users\\bar32\\Desktop\\NaCondiciiDebug\\DecodedDirectory\""
     }
   }
 }

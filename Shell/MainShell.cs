@@ -1,4 +1,5 @@
 ﻿using Marar.Core.Linker;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Marar.Shell
@@ -17,6 +18,7 @@ namespace Marar.Shell
                     Encode();
                     break;
                 case "-v":
+                    Help();
                     Version();
                     break;
                 case "-d":
@@ -32,7 +34,7 @@ namespace Marar.Shell
                     PrintFileSystem();
                     break;
                 default:
-                    Console.WriteLine("Invalid args");
+                    Console.WriteLine("Invalid argument");
                     break;
             }
 
@@ -42,6 +44,7 @@ namespace Marar.Shell
         {
             if (args.Length == 0)
             {
+                Version();
                 Help();
                 return 0;
             }
@@ -59,15 +62,23 @@ namespace Marar.Shell
                 }
             }
         }
+        private static void SetCrypto()
+        {
+            Console.Write("Enter cryptographic key: ");
+            Archive.SetCrypto(SHA256.HashData(Encoding.UTF8.GetBytes(Console.ReadLine() ?? "")));
+            (int a, int b) = Console.GetCursorPosition();
+            Console.SetCursorPosition(0, b - 1);
+            Console.WriteLine(new string('*', Console.BufferWidth));
+        }
         private static void Version()
         {
-            Console.WriteLine($"Marar Archivator. Version: {Launcher.CommonVersion}");
+            Console.WriteLine($"Marar the archiver. Version: {Launcher.CommonVersion}");
         }
         private static void Help()
         {
             Console.WriteLine(
                 """
-                Usage: [/arg1] [/args2] [path1] [path2]
+                Usage: [-arg1] [-args2] [path1] [path2]
 
                 List of arguments 1:
                     -e - encode files from directory (path 1) to archive (path 2). Can request cryptographic key
@@ -100,40 +111,25 @@ namespace Marar.Shell
         }
         private static void PrintFileSystem()
         {
-            //Console.WriteLine("Black hole: it is not implemented");
-            //return;
-            /*void BindPath(int number)
-            {
-                for (int i = 0; i < Files.Count; i++)
-                {
-                    if (Files[i].Address == number) Files[i].ExternalPath = Path.Combine(Directories[number].ExternalPath, Files[i].Name);
-                }
-                for (int i = 1; i < Directories.Count; i++)
-                {
-                    if (Directories[i].Address == number)
-                    {
-                        Directories[i].ExternalPath = Path.Combine(Directories[number].ExternalPath, Directories[i].Name);
-                        BindPath(i);
-                    }
-                }
-            }*/
             FileStream archive = new(Args[^1], FileMode.Open);
             Archive = new(archive, LinkerTrace);
+            Archive.ReadPrimaryHeader();
+            if (Archive.UseCryptoFS) SetCrypto();
             Archive.ReadFS();
 
             void printLine(int number, int bufferLength)
             {
-                for (int i = 1; i < Archive.FileHeader.Directories.Count; i++)
+                for (int i = 0; i < Archive.FileHeader.Directories.Count; i++)
                 {
                     if (Archive.FileHeader.Directories[i].Address == number)
                     {
-                        Console.WriteLine('D' + new string(' ', bufferLength) + Archive.FileHeader.Directories[i].Name);
-                        printLine(i, bufferLength + 1);
+                        Console.WriteLine("D> " + new string(' ', bufferLength) + Archive.FileHeader.Directories[i].Name);
+                        printLine(i + 1, bufferLength + 1);
                     }
                 }
                 for (int i = 0; i < Archive.FileHeader.Files.Count; i++)
                 {
-                    if (Archive.FileHeader.Directories[i].Address == number) Console.WriteLine('F' + new string(' ', bufferLength) + Archive.FileHeader.Directories[i].Name);
+                    if (Archive.FileHeader.Files[i].Address == number) Console.WriteLine("F> " + new string(' ', bufferLength) + Archive.FileHeader.Files[i].Name);
                 }
             }
 
@@ -164,14 +160,7 @@ namespace Marar.Shell
                 }
             }
 
-            if (Archive.UseCrypto || Archive.UseCryptoFS)
-            {
-                Console.Write("Enter cryptographic key: ");
-                Archive.SetCrypto(Encoding.UTF8.GetBytes(Console.ReadLine() ?? ""));
-                (int a, int b) = Console.GetCursorPosition();
-                Console.SetCursorPosition(0, b - 1);
-                Console.WriteLine(new string('*', Console.BufferWidth));
-            }
+            if (Archive.UseCrypto || Archive.UseCryptoFS) SetCrypto();
 
             Archive.LinkTo(Args[^2]);
             archive.Close();
@@ -182,6 +171,8 @@ namespace Marar.Shell
             Console.WriteLine("Start decoding");
             FileStream archive = new(Args[^2], FileMode.Open);
             Archive = new(archive, LinkerTrace);
+            Archive.ReadPrimaryHeader();
+            if (Archive.UseCrypto || Archive.UseCryptoFS) SetCrypto();
             Archive.LinkFrom(Args[^1], Args[1] == "-i");
             archive.Close();
             Console.WriteLine("Succesful decoding");

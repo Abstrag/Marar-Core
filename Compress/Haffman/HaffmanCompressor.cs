@@ -171,9 +171,9 @@
                         {
                             bit = reader.ReverseReadBit();
                         }
-                        catch
+                        catch(EndOfStreamException)
                         {
-                            break;
+                            return;
                         }                        
                         //if (bit == 0) Logging.Write(0.ToString());
                         //else Logging.Write(1.ToString());
@@ -181,18 +181,6 @@
                     }
                 }
             }
-
-            Output.Flush();
-            /*BinaryCode[] codes = GetCodes(root);
-            byte maxLength = 0;
-            byte minLength = 255;
-            for (short i = 0; i < 256; i++)
-            {
-                if (codes[i].BitsCount > maxLength) maxLength = codes[i].BitsCount;
-                if ((codes[i].BitsCount + 1) < minLength) minLength = codes[i].BitsCount;
-            }
-            minLength--;*/
-
         }
     }
 }
