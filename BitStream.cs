@@ -76,6 +76,7 @@
             {
                 int temp = Base.ReadByte();
                 if (temp == -1) throw new EndOfStreamException();
+                LastByte = (byte)temp;
                 LastLength = 0;
             }
             else LastLength++;
@@ -89,6 +90,7 @@
                 int temp = Base.ReadByte();
                 if (temp == -1) 
                     throw new EndOfStreamException();
+                LastByte = (byte)temp;
                 LastLength = 0;
             }
             else LastLength++;
