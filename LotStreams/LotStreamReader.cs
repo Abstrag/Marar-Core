@@ -98,7 +98,6 @@
             while (count > 0 && Position < Length)
             {
                 long streamLength = CurrentStream.Length - CurrentStream.Position;
-                long remains = count - streamLength;
 
                 if (count - streamLength <= 0)
                 {
@@ -109,10 +108,10 @@
                 }
                 else
                 {
-                    CurrentStream.ReadExactly(buffer, offset, (int)streamLength);
-                    offset += (int)remains;
+                    offset += CurrentStream.Read(buffer, offset, (int)streamLength);
                     count -= (int)streamLength;
                     result += (int)streamLength;
+                    InternalPosition += streamLength;
                     StreamCounter++;
                 }
             }

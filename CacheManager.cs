@@ -6,7 +6,7 @@
         private static string RootDirectory;
         public static string CurrentDirectory { get; private set; }
 
-        public static void GlobalClear()
+        public static void GlobalFlush()
         {
             Directory.Delete(RootDirectory, true);
             Directory.CreateDirectory(RootDirectory);

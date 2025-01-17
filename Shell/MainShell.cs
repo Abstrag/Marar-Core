@@ -51,6 +51,7 @@ namespace Marar.Shell
             else
             {
                 Args = args;
+                return Handler();
                 try
                 {
                     return Handler();

@@ -28,9 +28,17 @@
         }
         private void InitFrequency()
         {
+            int length;
+            byte[] buffer = new byte[65536];
+
             while (Input.Position < Input.Length)
             {
-                FrequencyDictionary[Input.ReadByte()]++;
+                length = Input.Read(buffer);
+
+                for (int i = 0; i < length; i++)
+                {
+                    FrequencyDictionary[buffer[i]]++;
+                }
             }
             Input.Position = 0;
         }
@@ -135,12 +143,18 @@
 
             BitStream bitWriter = new(Output);
             BinaryCode[] codes = GetCodes(GetRoot());
-            
+
+            int length;
+            byte[] buffer = new byte[65536];
+
             while (Input.Position < Input.Length)
             {
-                byte symbol = (byte)Input.ReadByte();
-                //Logging.Write(Convert(codes[symbol]) + ' ');
-                bitWriter.Write(codes[symbol].Code, codes[symbol].BitsCount);
+                length = Input.Read(buffer);
+
+                for (int i = 0; i < length; i++)
+                {
+                    bitWriter.Write(codes[buffer[i]].Code, codes[buffer[i]].BitsCount);
+                }
             }
             bitWriter.FlushWrite();
         }
