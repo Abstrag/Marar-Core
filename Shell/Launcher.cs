@@ -16,6 +16,8 @@ namespace Marar.Shell
 
         public static int Main(string[]? args)
         {
+            Console.WriteLine(RootDirectory);
+            return 0;
             CacheManager.InitManager(Path.Combine(RootDirectory, "temp"));
             MainShell.LinkerTrace = new LinkerTrace(LogStream);
 
