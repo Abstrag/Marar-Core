@@ -86,7 +86,7 @@ namespace Marar.Shell
                         -C - use cryptography to encrypt file system
                         -c - use cryptography to encrypt files
                         -t - write creation date-time of file
-                        -l - use 64-bit number to write size of file]
+                        -l - use 64-bit number to write size of file
                     -d - decode files from archive (path 1) to directory (path 2). Can request cryptographic key
                         -i - ignore wrong signature
                     -v - print current version of program

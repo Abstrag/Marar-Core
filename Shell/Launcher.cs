@@ -1,23 +1,16 @@
 ﻿using Marar.Core;
-using System.Reflection;
 
 namespace Marar.Shell
 {
     public class Launcher
     {
-        private static string LocalDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\DecodedDirectory";
-        private static string Origin = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\gitter.jpg";
-        private static string Encoded = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\encoded.bin";
-        private static string Decoded = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\decoded.bin";
         public static byte LinkerVersion = 0;
         public static string CommonVersion = "0.0.1 alpha";
-        public static string RootDirectory = Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName;
+        public static string RootDirectory = AppDomain.CurrentDomain.BaseDirectory;
         public static Stream LogStream = new FileStream(Path.Combine(RootDirectory, "log.txt"), FileMode.Create);
 
         public static int Main(string[]? args)
         {
-            Console.WriteLine(RootDirectory);
-            return 0;
             CacheManager.InitManager(Path.Combine(RootDirectory, "temp"));
             MainShell.LinkerTrace = new LinkerTrace(LogStream);
 
