@@ -167,7 +167,7 @@
             BitStream reader = new(Input);
             reader.StartRead();
 
-            while (true)
+            while (!reader.IsEnd)
             {
                 tempNode = root;
                 while (true)
@@ -180,15 +180,7 @@
                     }
                     else
                     {
-                        byte bit;
-                        try
-                        {
-                            bit = reader.ReverseReadBit();
-                        }
-                        catch(EndOfStreamException)
-                        {
-                            return;
-                        }                        
+                        byte bit = reader.ReverseReadBit();
                         //if (bit == 0) Logging.Write(0.ToString());
                         //else Logging.Write(1.ToString());
                         tempNode = tempNode.GetNode(bit);

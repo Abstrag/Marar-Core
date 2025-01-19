@@ -16,7 +16,7 @@
                 LastLength = (byte)(7 - value);
             }
         }
-        public bool IsEnd { get; private set; }
+        public bool IsEnd { get; private set; } = false;
 
         public BitStream(Stream stream)
         {
@@ -75,7 +75,8 @@
             if (LastLength == 7)
             {
                 int temp = Base.ReadByte();
-                if (temp == -1) throw new EndOfStreamException();
+                if (temp == -1)
+                    IsEnd = true;
                 LastByte = (byte)temp;
                 LastLength = 0;
             }
@@ -89,7 +90,7 @@
             {
                 int temp = Base.ReadByte();
                 if (temp == -1) 
-                    throw new EndOfStreamException();
+                    IsEnd = true;
                 LastByte = (byte)temp;
                 LastLength = 0;
             }
