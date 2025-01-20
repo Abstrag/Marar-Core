@@ -52,15 +52,6 @@ namespace Marar.Shell
             {
                 Args = args;
                 return Handler();
-                try
-                {
-                    return Handler();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"Undefined error: {e.Message}");
-                    return -1;
-                }
             }
         }
         private static void SetCrypto()
@@ -81,7 +72,7 @@ namespace Marar.Shell
                 """
                 Usage: [-arg1] [-args2] [path1] [path2]
 
-                List of arguments 1:
+                Used keys:
                     -e - encode files from directory (path 1) to archive (path 2). Can request cryptographic key
                         -C - use cryptography to encrypt file system
                         -c - use cryptography to encrypt files
