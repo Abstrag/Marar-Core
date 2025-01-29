@@ -19,34 +19,6 @@ namespace Marar.Shell
             LogStream.Close();
             CacheManager.Flush();
             return result;
-            /*#if false
-                        CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
-                        CacheManager.GlobalClear();
-                        CacheManager.InitManager();
-
-                        FileStream input = new(Encoded, FileMode.Open);
-
-                        MainLinker linker = new(input, MD5.HashData([0]), SHA256.HashData([0]));
-                        linker.LinkFrom(LocalDirectory);
-
-                        CacheManager.Flush();
-            #else
-                        CacheManager.RootDirectory = @"Y:\Users\bar32\Desktop\NaCondiciiDebug\temp";
-                        CacheManager.GlobalClear();
-                        CacheManager.InitManager();
-
-                        FileStream output = new(Encoded, FileMode.Create);
-
-                        MainLinker linker = new(output, MD5.HashData([0]), SHA256.HashData([0]));
-                        linker.UseTime = true;
-                        linker.UseCrypto = true;
-                        linker.UseCryptoFS = true;
-                        linker.LargeMode = true;
-                        linker.LinkTo(@"Y:\Users\bar32\Desktop\NaCondiciiDebug\TestDirectory");
-
-                        output.Close();
-                        CacheManager.Flush();
-            #endif*/
         }
     }
 }

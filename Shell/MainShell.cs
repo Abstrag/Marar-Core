@@ -10,7 +10,7 @@ namespace Marar.Shell
         private static string[] Args = [];
         public static ILinkerTrace LinkerTrace;
 
-        private static int Handler()
+        private static void Handler()
         {
             switch (Args[0])
             {
@@ -37,8 +37,6 @@ namespace Marar.Shell
                     Console.WriteLine("Invalid argument");
                     break;
             }
-
-            return 0;
         }
         public static int Run(string[] args)
         {
@@ -46,21 +44,35 @@ namespace Marar.Shell
             {
                 Version();
                 Help();
-                return 0;
             }
             else
             {
                 Args = args;
-                return Handler();
+#if RELEASE
+                try
+                {
+                    Handler();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Unexpected exception: {e.Message}");
+                    return -1;
+                }
+#else 
+                Handler();
+#endif
             }
+
+            return 0;
         }
         private static void SetCrypto()
         {
             Console.Write("Enter cryptographic key: ");
-            Archive.SetCrypto(SHA256.HashData(Encoding.UTF8.GetBytes(Console.ReadLine() ?? "")));
             (int a, int b) = Console.GetCursorPosition();
-            Console.SetCursorPosition(0, b - 1);
-            Console.WriteLine(new string('*', Console.BufferWidth));
+            string stringKey = Console.ReadLine() ?? "";
+            Archive.SetCrypto(SHA256.HashData(Encoding.UTF8.GetBytes(stringKey)));
+            Console.SetCursorPosition(a, b);
+            Console.WriteLine(new string('*', stringKey.Length));
         }
         private static void Version()
         {
