@@ -68,11 +68,8 @@ namespace Marar.Shell
         private static void SetCrypto()
         {
             Console.Write("Enter cryptographic key: ");
-            (int a, int b) = Console.GetCursorPosition();
             string stringKey = Console.ReadLine() ?? "";
             Archive.SetCrypto(SHA256.HashData(Encoding.UTF8.GetBytes(stringKey)));
-            Console.SetCursorPosition(a, b);
-            Console.WriteLine(new string('*', stringKey.Length));
         }
         private static void Version()
         {

@@ -29,7 +29,7 @@
         private void InitFrequency()
         {
             int length;
-            byte[] buffer = new byte[65536];
+            byte[] buffer = new byte[1048576];
 
             while (Input.Position < Input.Length)
             {
@@ -138,6 +138,7 @@
 
         public override void Encode()
         {
+            Console.WriteLine();
             InitFrequency();
             WriteDictionary();
 
@@ -145,7 +146,7 @@
             BinaryCode[] codes = GetCodes(GetRoot());
 
             int length;
-            byte[] buffer = new byte[65536];
+            byte[] buffer = new byte[1048576];
 
             while (Input.Position < Input.Length)
             {
