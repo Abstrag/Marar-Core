@@ -7,21 +7,9 @@ using System.Security.Cryptography;
 
 namespace Marar.Core.Linker
 {
-    public enum LinkerCondition
-    {
-        PrimaryHeader,
-        FSHeader,
-        Crypto,
-        Compress
-    }
-    public interface ILinkerTrace
-    {
-        public void Trace(LinkerCondition condition);
-    }
     public class MainLinker
     {
         private const uint Signature = 0xAF72A04D;
-        private readonly ILinkerTrace TraceManager;
         private readonly string GlobalCache = CacheManager.GetNewFile();
         private readonly Stream MainStream;
         private Crypto GlobalCrypto;
@@ -34,9 +22,8 @@ namespace Marar.Core.Linker
         public bool UseCrypto { set => SetFlag(5, value); get => GetFlag(5); }
         public bool UseCryptoFS { set => SetFlag(4, value); get => GetFlag(4); }
 
-        public MainLinker(Stream mainStream, ILinkerTrace traceManager)
+        public MainLinker(Stream mainStream)
         {
-            TraceManager = traceManager;
             MainStream = mainStream;
         }
 
@@ -138,18 +125,11 @@ namespace Marar.Core.Linker
 
             FileHeader.InitFS(rootDirectory, LargeMode);
 
-            TraceManager.Trace(LinkerCondition.PrimaryHeader);
             WritePrimaryHeader();
-            TraceManager.Trace(LinkerCondition.FSHeader);
             WriteFS();
-            TraceManager.Trace(LinkerCondition.Compress);
             Compress();
 
-            if (UseCrypto)
-            {
-                TraceManager.Trace(LinkerCondition.Crypto);
-                Encrypt();
-            }
+            if (UseCrypto) Encrypt();
 
             MainStream.Flush();
         }

@@ -8,7 +8,6 @@ namespace Marar.Shell
     {
         private static MainLinker? Archive = null;
         private static string[] Args = [];
-        public static ILinkerTrace LinkerTrace;
 
         private static void Handler()
         {
@@ -101,7 +100,7 @@ namespace Marar.Shell
         private static void PrintPrimaryHeader()
         {
             FileStream archive = new(Args[^1], FileMode.Open);
-            Archive = new(archive, LinkerTrace);
+            Archive = new(archive);
             Archive.ReadPrimaryHeader(Args[1] == "-i");
             Console.WriteLine($"Version: {Archive.Version}");
             Console.WriteLine($"Creation date-time: {Archive.CreationDateTime.ToString()}");
@@ -113,7 +112,7 @@ namespace Marar.Shell
         private static void PrintFileSystem()
         {
             FileStream archive = new(Args[^1], FileMode.Open);
-            Archive = new(archive, LinkerTrace);
+            Archive = new(archive);
             Archive.ReadPrimaryHeader();
             if (Archive.UseCryptoFS) SetCrypto();
             Archive.ReadFS();
@@ -140,7 +139,7 @@ namespace Marar.Shell
         private static void Encode()
         {
             FileStream archive = new(Args[^1], FileMode.Create);
-            Archive = new(archive, LinkerTrace);
+            Archive = new(archive);
 
             for (int i = 1; i < Args.Length - 2; i++)
             {
@@ -171,7 +170,7 @@ namespace Marar.Shell
         {
             Console.WriteLine("Start decoding");
             FileStream archive = new(Args[^2], FileMode.Open);
-            Archive = new(archive, LinkerTrace);
+            Archive = new(archive);
             Archive.ReadPrimaryHeader();
             if (Archive.UseCrypto || Archive.UseCryptoFS) SetCrypto();
             Archive.LinkFrom(Args[^1], Args[1] == "-i");
