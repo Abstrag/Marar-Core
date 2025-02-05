@@ -102,12 +102,12 @@ namespace Marar.Shell
             FileStream archive = new(Args[^1], FileMode.Open);
             Archive = new(archive);
             Archive.ReadPrimaryHeader(Args[1] == "-i");
-            Console.WriteLine($"Version: {Archive.Version}");
+            Console.WriteLine($"Linker version: {Archive.Version}");
             Console.WriteLine($"Creation date-time: {Archive.CreationDateTime.ToString()}");
             Console.WriteLine($"Using time: {Archive.UseTime}");
             Console.WriteLine($"Using large mode: {Archive.LargeMode}");
-            Console.WriteLine($"Encription file system: {Archive.UseCryptoFS}");
-            Console.WriteLine($"Encription files: {Archive.UseCrypto}");
+            Console.WriteLine($"Encryption file system: {Archive.UseCryptoFS}");
+            Console.WriteLine($"Encryption files: {Archive.UseCrypto}");
         }
         private static void PrintFileSystem()
         {
@@ -123,13 +123,13 @@ namespace Marar.Shell
                 {
                     if (Archive.FileHeader.Directories[i].Address == number)
                     {
-                        Console.WriteLine("D> " + new string(' ', bufferLength) + Archive.FileHeader.Directories[i].Name);
+                        Console.WriteLine("|D| |" + new string('=', bufferLength) + "| " + Archive.FileHeader.Directories[i].Name);
                         printLine(i + 1, bufferLength + 1);
                     }
                 }
                 for (int i = 0; i < Archive.FileHeader.Files.Count; i++)
                 {
-                    if (Archive.FileHeader.Files[i].Address == number) Console.WriteLine("F> " + new string(' ', bufferLength) + Archive.FileHeader.Files[i].Name);
+                    if (Archive.FileHeader.Files[i].Address == number) Console.WriteLine("|F| |" + new string('=', bufferLength) + "| " + Archive.FileHeader.Files[i].Name);
                 }
             }
 
